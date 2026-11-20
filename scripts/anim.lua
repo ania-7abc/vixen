@@ -1,6 +1,6 @@
 require("scripts.util")
 
-local sleep = require("scripts.sleep")
+require("scripts.sleep")
 local options = require("scripts.options")
 local items = require("scripts.items")
 
@@ -406,7 +406,7 @@ local earTwitchSide = "Left"
 local earTwitchDir = 1
 
 local function tickEarTwitch()
-    if not options.earTwitch or sleep.isSleeping() then
+    if not options.earTwitch then
         earTwitchTicks = 0
         return
     end
@@ -447,17 +447,19 @@ local wheelSwapNode = aurianims.mix(
 )
 local wheelPoseAnim = wheelSwapNode
 
-local mainAnim = aurianims.mix(
-    function (data)
-        return data.wheelBlend
-    end,
-    aurianims.stack{
-        playerAnim,
-        headTiltAnim,
-        earTwitchAnim,
-    },
-    wheelPoseAnim
-)
+local mainAnim = aurianims.stack{
+    aurianims.mix(
+        function (data)
+            return data.wheelBlend
+        end,
+        aurianims.stack{
+            playerAnim,
+            headTiltAnim,
+        },
+        wheelPoseAnim
+    ),
+    earTwitchAnim,
+}
 
 animController:setTree(mainAnim)
 

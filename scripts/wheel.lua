@@ -32,6 +32,9 @@ local posePage = action_wheel:newPage("Poses")
 local skinPage = action_wheel:newPage("Skins")
 local soundPage = action_wheel:newPage("Sounds")
 local settingsPage = action_wheel:newPage("Settings")
+local visualSettingsPage = action_wheel:newPage("Visual settings")
+local audioSettingsPage = action_wheel:newPage("Audio settings")
+local itemSettingsPage = action_wheel:newPage("Item settings")
 action_wheel:setPage(mainPage)
 
 local function addPageLink(title, item, page)
@@ -143,9 +146,22 @@ for _, key in ipairs(soundOrder) do
     end)
 end
 
--- settings
-local function addToggle(key, title, item, toggleItem, ping)
-    local action = settingsPage:newAction()
+-- settings, split into groups so the page stays readable
+local function addSettingsLink(title, item, page)
+    settingsPage:newAction()
+    :setTitle(title)
+    :setItem(item)
+    :onLeftClick(function (_)
+        openPage(page)
+    end)
+end
+
+addSettingsLink("Visual", "minecraft:ender_eye", visualSettingsPage)
+addSettingsLink("Audio", "minecraft:note_block", audioSettingsPage)
+addSettingsLink("Items", "minecraft:chest", itemSettingsPage)
+
+local function addToggle(page, key, title, item, toggleItem, ping)
+    local action = page:newAction()
     :setTitle(title)
     :setToggleTitle(title .. ": on")
     :setItem(item)
@@ -156,13 +172,12 @@ local function addToggle(key, title, item, toggleItem, ping)
     options.setAction(key, action)
 end
 
-addToggle("blinking", "Blinking", "minecraft:ender_eye", "minecraft:ender_pearl", pings.setBlinking)
-addToggle("foxSounds", "Fox SFX", "minecraft:sweet_berries", "minecraft:note_block", pings.setFoxSounds)
-addToggle("snoring", "Snoring", "minecraft:hay_block", "minecraft:red_bed", pings.setSnoring)
-addToggle("tailWag", "Auto tail sway", "minecraft:feather", "minecraft:sugar", pings.setTailWag)
-addToggle("allInMouth", "All in mouth", "minecraft:chest", "minecraft:cooked_chicken", pings.setAllInMouth)
-addToggle("earTwitch", "Ear twitch", "minecraft:rabbit_foot", "minecraft:rabbit_hide", pings.setEarTwitch)
-addToggle("zParticles", "Z particles", "minecraft:paper", "minecraft:blue_ice", pings.setZParticles)
+addToggle(visualSettingsPage, "blinking", "Blinking", "minecraft:ender_eye", "minecraft:ender_pearl", pings.setBlinking)
+addToggle(visualSettingsPage, "earTwitch", "Ear twitch", "minecraft:rabbit_foot", "minecraft:rabbit_hide", pings.setEarTwitch)
+addToggle(visualSettingsPage, "tailWag", "Auto tail sway", "minecraft:feather", "minecraft:sugar", pings.setTailWag)
+addToggle(audioSettingsPage, "foxSounds", "Fox SFX", "minecraft:sweet_berries", "minecraft:note_block", pings.setFoxSounds)
+addToggle(audioSettingsPage, "snoring", "Snoring", "minecraft:hay_block", "minecraft:red_bed", pings.setSnoring)
+addToggle(itemSettingsPage, "allInMouth", "All in mouth", "minecraft:chest", "minecraft:cooked_chicken", pings.setAllInMouth)
 
 return {
     mainPage = mainPage,
@@ -170,4 +185,7 @@ return {
     skinPage = skinPage,
     soundPage = soundPage,
     settingsPage = settingsPage,
+    visualSettingsPage = visualSettingsPage,
+    audioSettingsPage = audioSettingsPage,
+    itemSettingsPage = itemSettingsPage,
 }

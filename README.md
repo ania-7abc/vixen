@@ -56,8 +56,8 @@ Shaders:
 - Adaptive skin depending on the biome and dimension. Can be enabled from the action wheel.
 - Replaces some player sounds with the vanilla fox sound effects.
 - Soundboard for the vanilla fox sound effects. Can be played from the action wheel.
-  - Snores while sleeping, with drifting Z particles above the head.
-- Action wheel settings for blinking, fox sound effects, snoring, automatic tail sway while moving, carrying a lone item in the mouth and occasional idle ear twitching, plus sleeping Z particles.
+  - Snores while sleeping.
+- Action wheel settings, grouped into Visual, Audio and Items pages: blinking, ear twitching, automatic tail sway, fox sound effects, snoring and carrying a lone item in the mouth.
 
 ![sleepy](./misc/sleepy.png)
 
