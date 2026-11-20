@@ -34,7 +34,9 @@ animController:setDriver(function (data)
     data.leftActiveAction = data.leftActive and leftItem:getUseAction() or "NONE"
     data.rightActiveAction = data.rightActive and rightItem:getUseAction() or "NONE"
 
-    data.blockHeld = player:getHeldItem():isBlockItem()
+    local mainBlock = player:getHeldItem():isBlockItem()
+    data.blockHeld = mainBlock or leftItem:isBlockItem() or rightItem:isBlockItem()
+    data.blockHand = mainBlock and (handedness and "L" or "R") or (leftItem:isBlockItem() and "L" or "R")
 
     if vehicle ~= nil then pose = "SITTING" end
     data.pose = pose
@@ -67,6 +69,7 @@ animController:setDriver(function (data)
 end,
 {
     wheel = false,
+    blockHand = "R",
     groundTime = 0,
     airTime = 0,
     jumpTime = 0,
@@ -153,7 +156,7 @@ local walkBlockHoldAnim = aurianims.mix(
     end,
     aurianims.step(
         function (data)
-            return player:isLeftHanded()
+            return data.blockHand == "L"
         end,
         modelAnims.blockHoldL,
         modelAnims.blockHoldR
@@ -166,8 +169,9 @@ local leftArm = models.model.root.LeftArm
 local enderPivot = models.model.root.Body.EnderPivot
 local blockHoldAnim = aurianims.step(
     function (data)
-        -- set ender block wiggle
-        local r = rightArm:getOffsetRot()
+        -- set ender block wiggle on the arm that holds the block
+        local arm = data.blockHand == "L" and leftArm or rightArm
+        local r = arm:getOffsetRot()
         local magic = math.rad(r.z - 2.9)
         local slow = math.sin(magic / 2)
         local fast = math.sin(magic * 2)

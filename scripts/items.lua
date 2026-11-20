@@ -70,11 +70,13 @@ function events.tick()
     local item = isMouthItem(mainHandItem)
     local tool = isMouthTool(mainHandItem)
     local drink = isMouthDrink(mainHandItem)
-    local block = mainHandItem:isBlockItem()
+    local block = mainHandItem:isBlockItem() or offHandItem:isBlockItem()
     local sprinting = player:isSprinting()
     local mainHandPivot = leftHanded and "LeftItemPivot" or "RightItemPivot"
+    local offHandPivot = leftHanded and "RightItemPivot" or "LeftItemPivot"
 
-    enderIP:setParentType(block and mainHandPivot or "None")
+    local blockHand = mainHandItem:isBlockItem() and mainHandPivot or (offHandItem:isBlockItem() and offHandPivot or "None")
+    enderIP:setParentType(blockHand)
 
     setParentIfChanged(rightIP, isHandBusy(rightHandItem, sprinting) and "None" or "RightItemPivot")
     setParentIfChanged(leftIP, isHandBusy(leftHandItem, sprinting) and "None" or "LeftItemPivot")
