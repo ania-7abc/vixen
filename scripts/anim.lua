@@ -18,7 +18,6 @@ animController:setDriver(function (data)
     local inLiquid = #world.getBlockState(player:getPos()):getFluidTags() >= 1
     local vehicle = player:getVehicle()
     local isCrouching = player:isCrouching()
-    data.isCrouching = isCrouching
 
     -- hands
     local handedness = player:isLeftHanded()
@@ -287,13 +286,22 @@ local movementAnim = aurianims.mix(
     fourLeggedAnim
 )
 
-local crouchAnim = aurianims.mix(
+local crouchWalkAnim = aurianims.mix(
     function (data)
-        modelAnims.crouchWalk:setSpeed(data.smoothWalkScale * data.smoothForwardScale)
+        local speed = math.clamp(math.abs(data.smoothForwardScale) * 5, 0.5, 1.5)
+        modelAnims.crouchWalk:setSpeed(data.smoothForwardScale < 0 and -speed or speed)
         return data.smoothWalkScale
     end,
     modelAnims.crouch,
     modelAnims.crouchWalk
+)
+
+local crouchAnim = aurianims.step(
+    function (data)
+        return not data.isOnGround
+    end,
+    modelAnims.crouchFall2,
+    crouchWalkAnim
 )
 
 local bendKneesToVanilla = aurianims.func(
@@ -361,23 +369,18 @@ local playerAnim = aurianims.step(
 
 -- the fall pose replaces the pose selected by playerAnim, so it can only be
 -- started once per fall instead of being restarted from several branches
+-- crouching has its own airborne pose in crouchAnim
 local function isFalling(data)
-    if data.pose ~= "STANDING" and data.pose ~= "CROUCHING" then return false end
+    if data.pose ~= "STANDING" then return false end
     return not data.isOnGround and data.velocity.y < -0.1 and data.jumpTime <= 0.01 and data.airTime > 1
 end
 
 local fallingAnim = aurianims.step(
     function (data)
-        return data.isCrouching
+        return data.isSprinting
     end,
-    modelAnims.crouchFall2,
-    aurianims.step(
-        function (data)
-            return data.isSprinting
-        end,
-        modelAnims.sprintJumpDown,
-        modelAnims.walkJumpDown
-    )
+    modelAnims.sprintJumpDown,
+    modelAnims.walkJumpDown
 )
 
 local headTiltAnim = aurianims.func(
