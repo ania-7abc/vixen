@@ -37,9 +37,10 @@ end
 local accessories = {}
 
 events.on("entity_init", function ()
-    -- the accessory cubes live on their own texture; make sure the parts use it
-    -- even if the global skin texture is overridden by scripts/features/skins.lua
-    local texture = textures["assets.accessories"] or textures:get("assets.accessories")
+    -- the accessory cubes use the texture embedded in model.bbmodel, while the
+    -- skins live in assets/. Re-apply it after the global skin texture override.
+    local texture = textures["model.accessories"] or textures:get("model.accessories")
+        or textures["assets.accessories"] or textures:get("assets.accessories")
     if texture then
         for _, key in ipairs(keys) do
             local part = getPart(key)

@@ -94,6 +94,7 @@ local function tickBlink()
         blinkTicks = blinkTicks - 1
         if blinkTicks == 0 then updateHeadTexture() end
     elseif not state.isSleeping() and blinkTimer:down() then
+        blinkTimer:reset()
         blinkTicks = blinkDuration
         updateHeadTexture()
     end

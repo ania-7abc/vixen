@@ -73,7 +73,9 @@ function driver.setup(controller)
         if not data.isOnGround and data.oldOnGround and oldGroundTime > 2 and velocity.y > 0.1 then
             data.jumpTime = math.min(velocity.y * 8, 2)
         elseif data.isOnGround then
-            data.jumpTime = math.lerp(data.jumpTime, 0, 0.6)
+            -- clear on touchdown: a long cooldown kept the sprint takeoff and
+            -- the walk jump alive after landing, making hands jitter on exit
+            data.jumpTime = 0
         end
 
         -- cross-fade to the takeoff pose instead of snapping into it, and back to

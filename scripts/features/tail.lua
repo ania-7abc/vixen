@@ -59,9 +59,10 @@ events.on("tick", function ()
     if not settings.tailWag then wagWalkSpeed = 0 end
     local playerVelRaw = vectors.rotateAroundAxis(bodyPitch, playerVel, vec(1, 0, 0))
 
-    -- calculate body rotation difference
+    -- calculate body rotation difference; yaw wraps at +/-180, so a plain
+    -- subtraction can produce a 360 degree jump and fling the tail sideways
     local newBodyRot = vec(bodyPitch, bodyRot, 0)
-    local deltaBodyRot = newBodyRot - oldBodyRot
+    local deltaBodyRot = vec(bodyPitch - oldBodyRot.x, math.shortAngle(oldBodyRot.y, bodyRot), 0)
     oldBodyRot = newBodyRot
     -- calculate world space tail rotation
     oldTailRot = newTailRot
