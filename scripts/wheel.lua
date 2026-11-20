@@ -55,20 +55,24 @@ poseActions.wSleep = posePage:newAction()
 :setTitle("Sleep")
 :setItem("minecraft:red_bed")
 :onLeftClick(function (_)
-    anim.sleep()
-    sounds.play("sleep")
+    if anim.activePose() == "wSleep" then
+        anim.stop()
+    else
+        anim.sleep()
+        sounds.play("sleep")
+    end
 end)
 poseActions.wSit = posePage:newAction()
 :setTitle("Sit (tucked)")
 :setItem("minecraft:spruce_stairs")
 :onLeftClick(function (_)
-    anim.pose("wSit")
+    if anim.activePose() == "wSit" then anim.stop() else anim.pose("wSit") end
 end)
 poseActions.wSitAlt = posePage:newAction()
 :setTitle("Sit (legs out)")
 :setItem("minecraft:oak_stairs")
 :onLeftClick(function (_)
-    anim.pose("wSitAlt")
+    if anim.activePose() == "wSitAlt" then anim.stop() else anim.pose("wSitAlt") end
 end)
 
 -- highlight the currently playing pose

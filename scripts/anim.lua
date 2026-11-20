@@ -448,6 +448,9 @@ return {
     activePose = function ()
         return wheelAnimName
     end,
+    stop = function ()
+        pings.stopWheelAnim()
+    end,
     sleep = function ()
         pings.setWheelSleeping(true)
         pings.playWheelAnim("wSleep")
