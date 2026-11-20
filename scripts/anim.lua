@@ -446,8 +446,6 @@ function pings.stopWheelAnim()
 end
 function pings.playWheelAnim(animName)
     wheelAnimPos = player:getPos()
-    -- sleep folds the body onto the floor, so fading into it from the standing pose looks wrong
-    if animName == "wSleep" and not wheelAnimName then animController.data.wheelBlend = 1 end
     if wheelAnimName and wheelAnimName ~= animName then
         animController.data.prevPose = wheelAnimName
         animController.data.poseSwapBlend = 0
