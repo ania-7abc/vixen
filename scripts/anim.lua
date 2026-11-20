@@ -96,7 +96,7 @@ local vanillaHandsAnim = aurianims.stack{
 
         -- vanilla halves the arm swing and tilts it down 18 degrees for held items;
         -- undo only that part so the arm keeps moving naturally
-        rot.x = (rot.x + 18) * 2
+        rot.x = (rot.x - 18) * 2
     end),
     modelAnims.handOverride -- override hand animations so that they dont play twice
 }
