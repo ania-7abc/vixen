@@ -80,22 +80,42 @@ function pings.setNamePlate(override)
     end
 end
 
--- sleeping
-local appliedSleeping = nil
-local function updateSkinSleepingTexture()
-    local sleeping = sleep.isSleeping()
-    if appliedSleeping == sleeping then return end
-    appliedSleeping = sleeping
-    models.model.root.Head:setPrimaryTexture("CUSTOM", textures[sleeping and (currentSkin.texture .. "_sleep") or currentSkin.texture])
+-- sleeping and blinking
+local blinkMinDelay = 60
+local blinkMaxDelay = 140
+local blinkDuration = 3
+
+local appliedClosed = nil
+local blinkTimer = math.random(blinkMinDelay, blinkMaxDelay)
+local blinkTicks = 0
+local function updateHeadTexture()
+    local closed = sleep.isSleeping() or blinkTicks > 0
+    if appliedClosed == closed then return end
+    appliedClosed = closed
+    models.model.root.Head:setPrimaryTexture("CUSTOM", textures[closed and (currentSkin.texture .. "_sleep") or currentSkin.texture])
 end
-sleep.onChange(updateSkinSleepingTexture)
+sleep.onChange(updateHeadTexture)
+
+local function tickBlink()
+    if blinkTicks > 0 then
+        blinkTicks = blinkTicks - 1
+        if blinkTicks == 0 then updateHeadTexture() end
+    elseif not sleep.isSleeping() then
+        blinkTimer = blinkTimer - 1
+        if blinkTimer <= 0 then
+            blinkTicks = blinkDuration
+            blinkTimer = math.random(blinkMinDelay, blinkMaxDelay)
+            updateHeadTexture()
+        end
+    end
+end
 
 local function setSkin(skin)
     if currentSkin == skin then return end
     currentSkin = skin
     models.model.root:setPrimaryTexture("CUSTOM", textures[skin.texture])
-    appliedSleeping = nil
-    updateSkinSleepingTexture()
+    appliedClosed = nil
+    updateHeadTexture()
     pings.setNamePlate(overridePlayerName)
     if host:isHost() then
         config:save("currentSkin", skin.key)
@@ -169,6 +189,7 @@ end
 
 function events.tick()
     sleep.setInBed(player:getPose() == "SLEEPING")
+    tickBlink()
 
     if not autoSkinEnabled then return end
     if skinUpdateTimer < skinUpdateInterval then
