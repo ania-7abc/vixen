@@ -55,6 +55,8 @@ animController:setDriver(function (data)
 
     data.isSprinting = sprinty and not inLiquid
     data.sprintScale = math.lerp(data.sprintScale, data.isSprinting and 1 or 0, 0.6)
+    -- cross-fade standing and sneaking instead of cutting between the poses
+    data.crouchBlend = math.lerp(data.crouchBlend, data.pose == "CROUCHING" and 1 or 0, 0.25)
 
     data.headTilt = math.lerp(data.headTilt, math.clamp(-velocity.y * 15, -25, 25), 0.3)
 
@@ -122,6 +124,7 @@ end,
     crouchAirBlend = 0,
     headTilt = 0,
     sprintScale = 0,
+    crouchBlend = 0,
     smoothWalkScale = 0,
     smoothForwardScale = 0,
 }
@@ -360,6 +363,20 @@ local flightAnim = aurianims.stack{
     bendKneesToVanilla,
 }
 
+local standingAnim = aurianims.stack{
+    movementAnim,
+    eatingAnim,
+    drinkingAnim,
+}
+
+local groundAnim = aurianims.mix(
+    function (data)
+        return data.crouchBlend
+    end,
+    standingAnim,
+    crouchAnim
+)
+
 local playerAnim = aurianims.step(
     function (data)
         return data.pose == "FALL_FLYING" or data.pose == "SPIN_ATTACK"
@@ -378,12 +395,8 @@ local playerAnim = aurianims.step(
                 SLEEPING = modelAnims.sleep,
                 SITTING = modelAnims.sit,
                 CLIMBING = modelAnims.climb,
-                CROUCHING = crouchAnim,
-                STANDING = aurianims.stack{
-                    movementAnim,
-                    eatingAnim,
-                    drinkingAnim,
-                }
+                CROUCHING = groundAnim,
+                STANDING = groundAnim,
             }
         )
     )
