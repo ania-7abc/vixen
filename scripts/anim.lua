@@ -135,7 +135,7 @@ end,
 )
 
 local vanillaHandsAnim = aurianims.conditional(
-    function () return not burn.isBurning() end,
+    function () return not burn.isActive() end,
     aurianims.stack{
         aurianims.vanilla({
             models.model.root.LeftArm,
@@ -240,7 +240,7 @@ local baseArmsAnim = aurianims.stack{
     crossbowAnim
 }
 local armsAnim = aurianims.conditional(
-    function () return not burn.isBurning() end,
+    function () return not burn.isActive() end,
     baseArmsAnim
 )
 
