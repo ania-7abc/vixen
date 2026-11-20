@@ -40,10 +40,6 @@ animController:setDriver(function (data)
     data.leftActiveAction = data.leftActive and leftItem:getUseAction() or "NONE"
     data.rightActiveAction = data.rightActive and rightItem:getUseAction() or "NONE"
 
-    local mainBlock = player:getHeldItem():isBlockItem()
-    data.blockHeld = mainBlock or leftItem:isBlockItem() or rightItem:isBlockItem()
-    data.blockHand = mainBlock and (handedness and "L" or "R") or (leftItem:isBlockItem() and "L" or "R")
-
     if vehicle ~= nil then
         pose = "SITTING"
     elseif climbing then
@@ -79,7 +75,6 @@ animController:setDriver(function (data)
 end,
 {
     wheel = false,
-    blockHand = "R",
     isOnGround = false,
     groundTime = 0,
     airTime = 0,
@@ -161,49 +156,17 @@ local drinkingAnim = aurianims.conditional(
     modelAnims.drink
 )
 
-local walkBlockHoldAnim = aurianims.mix(
+local armsIdleAnim = aurianims.mix(
     function (data)
         return data.smoothWalkScale
     end,
-    aurianims.step(
-        function (data)
-            return data.blockHand == "L"
-        end,
-        modelAnims.blockHoldL,
-        modelAnims.blockHoldR
-    ),
-    modelAnims.blockHoldWalk
-)
-
-local rightArm = models.model.root.RightArm
-local leftArm = models.model.root.LeftArm
-local enderPivot = models.model.root.Body.EnderPivot
-local blockHoldAnim = aurianims.step(
-    function (data)
-        -- set ender block wiggle on the arm that holds the block
-        local arm = data.blockHand == "L" and leftArm or rightArm
-        local r = arm:getOffsetRot()
-        local magic = math.rad(r.z - 2.9)
-        local slow = math.sin(magic / 2)
-        local fast = math.sin(magic * 2)
-        enderPivot:setRot(vec(0, slow * 60 + 90, 0))
-        enderPivot:setPos(vec(0, fast, -fast))
-
-        return data.blockHeld
-    end,
-    walkBlockHoldAnim,
+    modelAnims.armsIdle,
     aurianims.mix(
         function (data)
-            return data.smoothWalkScale
+            return data.smoothForwardScale / 2 + 0.5
         end,
-        modelAnims.armsIdle,
-        aurianims.mix(
-            function (data)
-                return data.smoothForwardScale / 2 + 0.5
-            end,
-            modelAnims.armsWalkBack,
-            modelAnims.armsWalk
-        )
+        modelAnims.armsWalkBack,
+        modelAnims.armsWalk
     )
 )
 
@@ -217,10 +180,7 @@ local armsAnim = aurianims.stack{
             rightArmAnim,
             bowAnim,
         },
-        aurianims.stack{
-            blockHoldAnim,
-            modelAnims.bigBlock,
-        }
+        armsIdleAnim
     ),
     crossbowAnim
 }
@@ -236,12 +196,7 @@ local walkingAnim = aurianims.mix(
         modelAnims.armsWalkBack:setTime(modelAnims.walkBack:getTime())
         return data.smoothWalkScale
     end,
-    aurianims.blend(
-        function (data)
-            return 1 - (data.blockHeld and 0.75 or 0)
-        end,
-        vanillaHandsAnim
-    ),
+    vanillaHandsAnim,
     aurianims.mix(
         function (data)
             return data.smoothForwardScale / 2 + 0.5

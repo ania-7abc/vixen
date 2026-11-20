@@ -57,7 +57,6 @@ local mouthTP = models.model.root.Head.MouthTPivot
 local mouthDP = models.model.root.Head.MouthDPivot
 local rightIP = models.model.root.RightArm.RightItemPivot
 local leftIP = models.model.root.LeftArm.LeftItemPivot
-local enderIP = models.model.root.Body.EnderPivot.EnderItemPivot
 
 local function setParentIfChanged(part, parent)
     if part:getParentType() ~= parent then
@@ -66,7 +65,7 @@ local function setParentIfChanged(part, parent)
 end
 
 local function isHandBusy(heldItem, sprinting)
-    return isMouthItem(heldItem) or isMouthDrink(heldItem) or heldItem:isBlockItem() or (isMouthTool(heldItem) and sprinting)
+    return isMouthItem(heldItem) or isMouthDrink(heldItem) or (isMouthTool(heldItem) and sprinting)
 end
 
 function events.tick()
@@ -79,12 +78,8 @@ function events.tick()
     local sprinting = player:isSprinting()
     local mainMouth = mouthActions(mainHandItem, sprinting)
     local offMouth = mouthActions(offHandItem, sprinting)
-    local block = mainHandItem:isBlockItem() or offHandItem:isBlockItem()
     local mainHandPivot = leftHanded and "LeftItemPivot" or "RightItemPivot"
     local offHandPivot = leftHanded and "RightItemPivot" or "LeftItemPivot"
-
-    local blockHand = mainHandItem:isBlockItem() and mainHandPivot or (offHandItem:isBlockItem() and offHandPivot or "None")
-    enderIP:setParentType(blockHand)
 
     setParentIfChanged(rightIP, isHandBusy(rightHandItem, sprinting) and "None" or "RightItemPivot")
     setParentIfChanged(leftIP, isHandBusy(leftHandItem, sprinting) and "None" or "LeftItemPivot")
