@@ -5,6 +5,7 @@ require("scripts.sleep")
 local items = require("scripts.items")
 
 local aurianims = require("scripts.aurianims")
+local burn = require("scripts.burn")
 
 local modelAnims = animations["model"]
 local animController = aurianims.new()
@@ -133,25 +134,28 @@ end,
 }
 )
 
-local vanillaHandsAnim = aurianims.stack{
-    aurianims.vanilla({
-        models.model.root.LeftArm,
-        models.model.root.RightArm
-    }, function (name, rot)
-        local handedness = player:isLeftHanded()
-        local offhand = name == "RIGHT_ARM" and handedness or not handedness
-        local heldItem = player:getHeldItem(offhand)
-        if not items.isHandBusy(heldItem, player:isSprinting(), offhand) then return end
+local vanillaHandsAnim = aurianims.conditional(
+    function () return not burn.isBurning() end,
+    aurianims.stack{
+        aurianims.vanilla({
+            models.model.root.LeftArm,
+            models.model.root.RightArm
+        }, function (name, rot)
+            local handedness = player:isLeftHanded()
+            local offhand = name == "RIGHT_ARM" and handedness or not handedness
+            local heldItem = player:getHeldItem(offhand)
+            if not items.isHandBusy(heldItem, player:isSprinting(), offhand) then return end
 
-        -- vanilla halves the walk swing and tilts the arm down 18 degrees for held items.
-        -- undo the pose, but take the missing half of the swing from the matching leg:
-        -- both use the same walk cycle, but in antiphase, and the leg has no item pose
-        -- or idle bob, so doubling the arm rotation would double the bob as well
-        local leg = name == "RIGHT_ARM" and vanilla_model.RIGHT_LEG or vanilla_model.LEFT_LEG
-        rot.x = rot.x - 18 - leg:getOriginRot().x / 2.8
-    end),
-    modelAnims.handOverride -- override hand animations so that they dont play twice
-}
+            -- vanilla halves the walk swing and tilts the arm down 18 degrees for held items.
+            -- undo the pose, but take the missing half of the swing from the matching leg:
+            -- both use the same walk cycle, but in antiphase, and the leg has no item pose
+            -- or idle bob, so doubling the arm rotation would double the bob as well
+            local leg = name == "RIGHT_ARM" and vanilla_model.RIGHT_LEG or vanilla_model.LEFT_LEG
+            rot.x = rot.x - 18 - leg:getOriginRot().x / 2.8
+        end),
+        modelAnims.handOverride -- override hand animations so that they dont play twice
+    }
+)
 
 local leftArmAnim = aurianims.switch(
     function (data)
@@ -221,7 +225,7 @@ local armsIdleAnim = aurianims.mix(
     )
 )
 
-local armsAnim = aurianims.stack{
+local baseArmsAnim = aurianims.stack{
     aurianims.step(
         function (data)
             return data.leftActive or data.rightActive
@@ -235,6 +239,10 @@ local armsAnim = aurianims.stack{
     ),
     crossbowAnim
 }
+local armsAnim = aurianims.conditional(
+    function () return not burn.isBurning() end,
+    baseArmsAnim
+)
 
 local walkingAnim = aurianims.mix(
     function (data)
@@ -418,7 +426,7 @@ local wheelPoseAnim = wheelSwapNode
 
 local wagBlendAnim = aurianims.func(
     function (data, blend)
-        animations.model.tailWag:blend(data.wagBlend)
+        animations.model.tailWag:blend(burn.isBurning() and 0 or data.wagBlend)
     end
 )
 

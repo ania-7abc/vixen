@@ -1,4 +1,5 @@
 local options = require("scripts.options")
+local burn = require("scripts.burn")
 
 -- each ear has its own spring, driven by movement and occasional twitch impulses
 local ears = {
@@ -42,16 +43,19 @@ function events.tick()
         0
     )
     if not options.earPhysics then target = vec(0, 0, 0) end
-
-    if options.earTwitch then
+    local burning = burn.isBurning()
+    if burning then
+        target = vec(20, 0, 0)
+    elseif options.earTwitch then
         twitchTimer = twitchTimer - 1
         if twitchTimer <= 0 then twitch() end
     end
+    local spring = burning and 0.2 or stiffness
 
     for _, ear in ipairs(ears) do
         ear.old = ear.rot:copy()
         local earTarget = target + vec(0, ear.side * 2, 0)
-        ear.vel = ear.vel * damping + (earTarget - ear.rot) * stiffness
+        ear.vel = ear.vel * damping + (earTarget - ear.rot) * spring
         ear.rot = ear.rot + ear.vel
     end
 end
