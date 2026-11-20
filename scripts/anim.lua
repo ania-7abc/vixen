@@ -389,14 +389,16 @@ local playerAnim = aurianims.step(
         bendKneesToVanilla,
         aurianims.switch(
             function (data)
+                -- both ground poses share one fade node, so it must appear
+                -- under a single key or the switch updates it twice
+                if data.pose == "STANDING" or data.pose == "CROUCHING" then return "GROUND" end
                 return data.pose
             end,
             {
                 SLEEPING = modelAnims.sleep,
                 SITTING = modelAnims.sit,
                 CLIMBING = modelAnims.climb,
-                CROUCHING = groundAnim,
-                STANDING = groundAnim,
+                GROUND = groundAnim,
             }
         )
     )
