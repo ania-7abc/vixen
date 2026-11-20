@@ -196,6 +196,7 @@ end
 addToggle(visualSettingsPage, "blinking", "Blinking", "minecraft:ender_eye", "minecraft:ender_pearl", pings.setBlinking)
 addToggle(visualSettingsPage, "earTwitch", "Ear twitch", "minecraft:rabbit_foot", "minecraft:rabbit_hide", pings.setEarTwitch)
 addToggle(visualSettingsPage, "earPhysics", "Ear physics", "minecraft:feather", "minecraft:blaze_rod", pings.setEarPhysics)
+addToggle(visualSettingsPage, "idleAnims", "Idle animations", "minecraft:clock", "minecraft:daylight_detector", pings.setIdleAnims)
 addToggle(visualSettingsPage, "tailWag", "Auto tail sway", "minecraft:feather", "minecraft:sugar", pings.setTailWag)
 addToggle(audioSettingsPage, "foxSounds", "Fox SFX", "minecraft:sweet_berries", "minecraft:note_block", pings.setFoxSounds)
 addToggle(audioSettingsPage, "snoring", "Snoring", "minecraft:hay_block", "minecraft:red_bed", pings.setSnoring)

@@ -9,6 +9,7 @@ local defaults = {
     allInMouth = false,
     earTwitch = true,
     earPhysics = true,
+    idleAnims = true,
 }
 
 local options = {}
