@@ -43,16 +43,12 @@ local function isMouthDrink(item)
     return contains(drinkExtra, item.id)
 end
 
-local blocks = {
-    --"minecraft:grass_block",
-}
-
 local mouthIP = models.model.root.Head.MouthIPivot
 local mouthTP = models.model.root.Head.MouthTPivot
 local mouthDP = models.model.root.Head.MouthDPivot
 local rightIP = models.model.root.RightArm.RightItemPivot
 local leftIP = models.model.root.LeftArm.LeftItemPivot
-local enderIP = models.model.root.EnderIPivot
+local enderIP = models.model.root.Body.EnderPivot.EnderItemPivot
 
 function events.tick()
     local handedness = false -- TODO player:isLeftHanded()
@@ -61,15 +57,10 @@ function events.tick()
     local item = isMouthItem(mainHandItem)
     local tool = isMouthTool(mainHandItem)
     local drink = isMouthDrink(mainHandItem)
-    local block = contains(blocks, mainHandItem.id)
+    local block = mainHandItem:isBlockItem()
     local sprinting = player:isSprinting()
 
-    if block then
-        animations.model.blockhold:play()
-    else
-        animations.model.blockhold:stop()
-    end
-    enderIP:setParentType((block and not sprinting) and "RightItemPivot" or "None")
+    enderIP:setParentType(block and "RightItemPivot" or "None")
     
     rightIP:setParentType((not handedness and not item and not drink and not block and not (tool and sprinting)) and "RightItemPivot" or "None")
     -- TODO fix pivot breaking when the secondary arms parent type is changed 
