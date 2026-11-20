@@ -1,3 +1,6 @@
+-- Config access used by every module that persists state.
+-- Keep the version/migration table here so old saves keep working.
+
 local CONFIG_VERSION = 1
 
 local migrations = {
@@ -9,7 +12,9 @@ local migrations = {
     end,
 }
 
-function migrateConfig()
+local configUtil = {}
+
+function configUtil.migrate()
     if not host:isHost() then return end
     local version = config:load("configVersion") or 0
     while version < CONFIG_VERSION do
@@ -20,33 +25,18 @@ function migrateConfig()
     config:save("configVersion", version)
 end
 
----@param tbl table
----@param x any
----@return boolean
-function contains(tbl, x)
-    for _, v in pairs(tbl) do
-        if v == x then return true end
-    end
-    return false
-end
-
----@param sound Minecraft.soundID
-function pings.playerSound(sound)
-    sounds:playSound(sound, player:getPos())
-end
-
----@param anim Animation
-function forceStartAnim(anim) 
-    if anim:isPlaying() then
-        anim:stop()
-    end
-    anim:play()
+--- Read without persisting a default (used for legacy keys).
+---@param key string
+---@return any
+function configUtil.raw(key)
+    if not host:isHost() then return nil end
+    return config:load(key)
 end
 
 ---@param key string
 ---@param default any
 ---@return any
-function safeConfigLoad(key, default)
+function configUtil.load(key, default)
     if not host:isHost() then return default end
     local value = config:load(key)
     if value == nil then
@@ -55,3 +45,11 @@ function safeConfigLoad(key, default)
     end
     return value
 end
+
+---@param key string
+---@param value any
+function configUtil.save(key, value)
+    if host:isHost() then config:save(key, value) end
+end
+
+return configUtil

@@ -1,6 +1,7 @@
-require("scripts.util")
-
-local options = require("scripts.options")
+local util = require("scripts.core.util")
+local settings = require("scripts.core.settings")
+local parts = require("scripts.core.parts")
+local events = require("scripts.core.events")
 
 local itemsExtra = {
     "minecraft:emerald",
@@ -42,15 +43,15 @@ local specialUseActions = {
 }
 
 local function isMouthTool(item)
-    return item:isTool() or item.id:find("_sword") ~= nil or contains(toolsExtra, item.id)
+    return item:isTool() or item.id:find("_sword") ~= nil or util.contains(toolsExtra, item.id)
 end
 
 local function isMouthItem(item)
-    return item:isFood() or contains(itemsExtra, item.id)
+    return item:isFood() or util.contains(itemsExtra, item.id)
 end
 
 local function isMouthDrink(item)
-    return contains(drinkExtra, item.id)
+    return util.contains(drinkExtra, item.id)
 end
 
 local function hasItem(item)
@@ -59,7 +60,7 @@ end
 
 -- with the setting on, a lone item in either hand goes to the mouth while sprinting
 local function singleMouthOffhand(sprinting)
-    if not options.allInMouth or not sprinting then return nil end
+    if not settings.allInMouth or not sprinting then return nil end
     local mainItem, offItem = player:getHeldItem(), player:getHeldItem(true)
     local main, off = hasItem(mainItem), hasItem(offItem)
     if main and not off and not specialUseActions[mainItem:getUseAction()] then return false end
@@ -79,11 +80,11 @@ local function mouthActions(item, sprinting, force)
     }
 end
 
-local mouthIP = models.model.root.Head.MouthIPivot
-local mouthTP = models.model.root.Head.MouthTPivot
-local mouthDP = models.model.root.Head.MouthDPivot
-local rightIP = models.model.root.RightArm.RightItemPivot
-local leftIP = models.model.root.LeftArm.LeftItemPivot
+local mouthIP = parts.mouthItem
+local mouthTP = parts.mouthTool
+local mouthDP = parts.mouthDrink
+local rightIP = parts.rightItemPivot
+local leftIP = parts.leftItemPivot
 
 local function setParentIfChanged(part, parent)
     if part:getParentType() ~= parent then
@@ -96,7 +97,7 @@ local function isHandBusy(heldItem, sprinting, offhand)
     return isMouthItem(heldItem) or isMouthDrink(heldItem) or (isMouthTool(heldItem) and sprinting)
 end
 
-function events.render()
+events.on("render", function ()
     local leftHanded = player:isLeftHanded()
     local mainHandItem = player:getHeldItem()
     local offHandItem = player:getHeldItem(true)
@@ -127,7 +128,7 @@ function events.render()
     setParentIfChanged(mouthDP, drinkParent)
     setParentIfChanged(mouthIP, itemParent)
     setParentIfChanged(mouthTP, toolParent)
-end
+end)
 
 return {
     isHandBusy = isHandBusy,

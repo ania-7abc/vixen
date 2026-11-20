@@ -1,16 +1,19 @@
-local options = require("scripts.options")
+local settings = require("scripts.core.settings")
+local parts = require("scripts.core.parts")
+local events = require("scripts.core.events")
+local time = require("scripts.core.time")
 
 -- each ear has its own spring, driven by movement and occasional twitch impulses
 local ears = {
     {
-        part = models.model.root.Head.LeftEar,
+        part = parts.leftEar,
         side = -1,
         rot = vec(0, 0, 0),
         old = vec(0, 0, 0),
         vel = vec(0, 0, 0),
     },
     {
-        part = models.model.root.Head.RightEar,
+        part = parts.rightEar,
         side = 1,
         rot = vec(0, 0, 0),
         old = vec(0, 0, 0),
@@ -20,18 +23,16 @@ local ears = {
 
 local stiffness = 0.09
 local damping = 0.8
-local twitchMinDelay = 40
-local twitchMaxDelay = 100
-local twitchTimer = math.random(twitchMinDelay, twitchMaxDelay)
+local twitchTimer = time.newTimer(40, 100)
 
 local function twitch()
     local ear = ears[math.random(1, 2)]
     local dir = math.random(0, 1) == 0 and -1 or 1
     ear.vel:add(vec(-dir * 12, 0, dir * 3))
-    twitchTimer = math.random(twitchMinDelay, twitchMaxDelay)
+    twitchTimer:reset()
 end
 
-function events.tick()
+events.on("tick", function ()
     local velocity = player:getVelocity()
     local bodyRot = player:getBodyYaw(1)
     local v = vectors.rotateAroundAxis(bodyRot, velocity, vec(0, 1, 0))
@@ -41,12 +42,9 @@ function events.tick()
         math.clamp(v.x * 28, -30, 30),
         0
     )
-    if not options.earPhysics then target = vec(0, 0, 0) end
+    if not settings.earPhysics then target = vec(0, 0, 0) end
 
-    if options.earTwitch then
-        twitchTimer = twitchTimer - 1
-        if twitchTimer <= 0 then twitch() end
-    end
+    if settings.earTwitch and twitchTimer:down() then twitch() end
 
     for _, ear in ipairs(ears) do
         ear.old = ear.rot:copy()
@@ -54,13 +52,13 @@ function events.tick()
         ear.vel = ear.vel * damping + (earTarget - ear.rot) * stiffness
         ear.rot = ear.rot + ear.vel
     end
-end
+end)
 
-function events.render(delta)
+events.on("render", function (delta)
     for _, ear in ipairs(ears) do
         ear.part:offsetRot(math.lerpAngle(ear.old, ear.rot, delta))
     end
-end
+end)
 
 function ears.kick(force)
     for _, ear in ipairs(ears) do

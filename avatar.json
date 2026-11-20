@@ -4,5 +4,6 @@
   "authors": [
     "Kapucni"
   ],
-  "color": "#e27c21"
+  "color": "#e27c21",
+  "autoScripts": ["scripts.init"]
 }

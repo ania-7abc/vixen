@@ -1,10 +1,9 @@
-require("scripts.util")
-
-local anim = require("scripts.anim")
-local skins = require("scripts.skins")
-local accessories = require("scripts.accessories")
-local sounds = require("scripts.sounds")
-local options = require("scripts.options")
+local anim = require("scripts.features.animation.anim")
+local skins = require("scripts.features.skins")
+local accessories = require("scripts.features.accessories")
+local sounds = require("scripts.features.sounds")
+local settings = require("scripts.core.settings")
+local events = require("scripts.core.events")
 
 -- page history for backing
 local history = {}
@@ -21,11 +20,11 @@ local function openPage(page)
 end
 
 -- go back with rmb
-function events.mouse_press(button, action, modifier)
+events.on("mouse_press", function (button, action, modifier)
     if button == 1 and action == 1 and action_wheel:isEnabled() then
         back()
     end
-end
+end)
 
 -- pages
 local mainPage = action_wheel:newPage("Main")
@@ -89,7 +88,7 @@ local autoSkinAction
 local activePose = nil
 local activeSkin = nil
 local autoSkin = nil
-function events.tick()
+events.on("tick", function ()
     local current = anim.activePose()
     if current ~= activePose then
         activePose = current
@@ -107,7 +106,7 @@ function events.tick()
         action:setColor(key == skin and not auto and vec(0, 1, 0) or nil)
     end
     autoSkinAction:setColor(auto and vec(0, 1, 0) or nil)
-end
+end)
 
 wagAction = posePage:newAction()
 :setTitle("Wag tail")
@@ -190,7 +189,7 @@ local function addToggle(page, key, title, item, toggleItem, ping)
     :onToggle(function (state, _)
         ping(state)
     end)
-    options.setAction(key, action)
+    settings.setAction(key, action)
 end
 
 addToggle(visualSettingsPage, "blinking", "Blinking", "minecraft:ender_eye", "minecraft:ender_pearl", pings.setBlinking)

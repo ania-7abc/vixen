@@ -1,3 +1,5 @@
+local events = require("scripts.core.events")
+
 ---@class aurianims
 local lib = {}
 ---@class aurianims.controller
@@ -264,19 +266,19 @@ nodesUpdateRender = {
    end,
 }
 
-function events.tick()
+events.on("tick", function ()
    for _, v in pairs(controllers) do
       if v.dataFunc then
          v.dataFunc(v.data)
       end
       update(v, v.tree, 1)
    end
-end
+end)
 
-function events.render(delta)
+events.on("render", function (delta)
    for _, v in pairs(controllers) do
       updateRender(delta, v, v.tree, 1)
    end
-end
+end)
 
 return lib

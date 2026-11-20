@@ -1,5 +1,8 @@
-local sleep = require("scripts.sleep")
-local options = require("scripts.options")
+local state = require("scripts.core.state")
+local settings = require("scripts.core.settings")
+local events = require("scripts.core.events")
+local time = require("scripts.core.time")
+require("scripts.core.util") -- defines pings.playerSound
 
 -- soundboard sounds
 local soundboardEntries = {
@@ -50,37 +53,33 @@ local soundLUT = {
     ["minecraft:entity.generic.eat"] = "minecraft:entity.fox.eat",
     ["minecraft:entity.player.burp"] = "minecraft:entity.fox.bite",
 }
-function events.on_play_sound(id, pos, vol, pitch, loop, category)
+
+events.on("on_play_sound", function (id, pos, vol, pitch, loop, category)
     -- only replace sounds emitted by the player
     if not player:isLoaded() then return end
     if category ~= "PLAYERS" then return end
     if not ((pos - player:getPos()):length() < 0.1) then return end
-    if not options.foxSounds then return end
+    if not settings.foxSounds then return end
 
     if soundLUT[id] then
         sounds:playSound(soundLUT[id], pos, vol, pitch, loop)
         return true
     end
-end
+end)
 
 -- snoring
-local snoringInterval = 60
-local snoringTimer = 0
-options.onChange("snoring", function (enabled)
-    if not enabled then snoringTimer = 0 end
+local snoringTimer = time.newInterval(60)
+settings.onChange("snoring", function (enabled)
+    if not enabled then snoringTimer:clear() end
 end)
-function events.tick()
-    if not options.snoring then return end
-    if not sleep.isSleeping() then return end
+events.on("tick", function ()
+    if not settings.snoring then return end
+    if not state.isSleeping() then return end
 
-    if snoringTimer < snoringInterval then 
-        snoringTimer = snoringTimer + 1
-    else
-        snoringTimer = 0
+    if snoringTimer:up() then
         sounds:playSound("minecraft:entity.fox.sleep", player:getPos())
     end
-end
-
+end)
 
 return {
     entries = soundboardEntries,

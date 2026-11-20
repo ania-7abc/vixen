@@ -1,7 +1,9 @@
-require("scripts.util")
-
-local sleep = require("scripts.sleep")
-local options = require("scripts.options")
+local config = require("scripts.core.config")
+local state = require("scripts.core.state")
+local settings = require("scripts.core.settings")
+local parts = require("scripts.core.parts")
+local time = require("scripts.core.time")
+local events = require("scripts.core.events")
 
 local skinEntries = {
     Rebecca = {
@@ -57,32 +59,29 @@ local currentSkin = skinEntries.Rebecca
 
 -- automatic skin updated based on the biome
 local autoSkinEnabled = false
-local skinUpdateInterval = 80
-local skinUpdateTimer = 0
+local skinUpdateTimer = time.newInterval(80)
 local function setAutoSkin(enabled)
     autoSkinEnabled = enabled
-    if host:isHost() then config:save("autoSkin", enabled) end
+    config.save("autoSkin", enabled)
 end
 function pings.setAutoSkin(enabled)
     setAutoSkin(enabled)
 end
 
 -- sleeping and blinking
-local blinkMinDelay = 60
-local blinkMaxDelay = 140
+local blinkTimer = time.newTimer(60, 140)
+local blinkTicks = 0
 local blinkDuration = 3
 
 local appliedClosed = nil
-local blinkTimer = math.random(blinkMinDelay, blinkMaxDelay)
-local blinkTicks = 0
 local function updateHeadTexture()
-    local closed = sleep.isSleeping() or blinkTicks > 0
+    local closed = state.isSleeping() or blinkTicks > 0
     if appliedClosed == closed then return end
     appliedClosed = closed
-    models.model.root.Head:setPrimaryTexture("CUSTOM", textures[closed and (currentSkin.texture .. "_sleep") or currentSkin.texture])
+    parts.head:setPrimaryTexture("CUSTOM", textures[closed and (currentSkin.texture .. "_sleep") or currentSkin.texture])
 end
-sleep.onChange(updateHeadTexture)
-options.onChange("blinking", function (enabled)
+state.onChange(updateHeadTexture)
+settings.onChange("blinking", function (enabled)
     if not enabled then
         blinkTicks = 0
         updateHeadTexture()
@@ -90,29 +89,23 @@ options.onChange("blinking", function (enabled)
 end)
 
 local function tickBlink()
-    if not options.blinking then return end
+    if not settings.blinking then return end
     if blinkTicks > 0 then
         blinkTicks = blinkTicks - 1
         if blinkTicks == 0 then updateHeadTexture() end
-    elseif not sleep.isSleeping() then
-        blinkTimer = blinkTimer - 1
-        if blinkTimer <= 0 then
-            blinkTicks = blinkDuration
-            blinkTimer = math.random(blinkMinDelay, blinkMaxDelay)
-            updateHeadTexture()
-        end
+    elseif not state.isSleeping() and blinkTimer:down() then
+        blinkTicks = blinkDuration
+        updateHeadTexture()
     end
 end
 
 local function setSkin(skin)
     if currentSkin == skin then return end
     currentSkin = skin
-    models.model.root:setPrimaryTexture("CUSTOM", textures[skin.texture])
+    parts.root:setPrimaryTexture("CUSTOM", textures[skin.texture])
     appliedClosed = nil
     updateHeadTexture()
-    if host:isHost() then
-        config:save("currentSkin", skin.key)
-    end
+    config.save("currentSkin", skin.key)
 end
 function pings.setSkin(skinKey)
     setSkin(skinEntries[skinKey] or currentSkin)
@@ -156,27 +149,22 @@ local function updateAutoSkin()
     setSkin(skinEntries.Rebecca)
 end
 
-function events.entity_init()
+events.on("entity_init", function ()
     if not host:isHost() then return end
-    autoSkinEnabled = safeConfigLoad("autoSkin", config:load("autoSkinEnabled") or false)
+    local legacyAuto = config.raw("autoSkinEnabled") or false
+    autoSkinEnabled = config.load("autoSkin", legacyAuto)
     pings.setAutoSkin(autoSkinEnabled)
-    pings.setSkin(safeConfigLoad("currentSkin", currentSkin.key))
-end
+    pings.setSkin(config.load("currentSkin", currentSkin.key))
+end)
 
-function events.tick()
-    sleep.setInBed(player:getPose() == "SLEEPING")
+events.on("tick", function ()
+    state.setInBed(player:getPose() == "SLEEPING")
     tickBlink()
 
     if not autoSkinEnabled then return end
-    if skinUpdateTimer < skinUpdateInterval then
-        skinUpdateTimer = skinUpdateTimer + 1
-        return
-    else
-        skinUpdateTimer = 0
-    end
-
+    if not skinUpdateTimer:up() then return end
     updateAutoSkin()
-end
+end)
 
 return {
     entries = skinEntries,
@@ -193,6 +181,6 @@ return {
     end,
     setAuto = function (enabled)
         pings.setAutoSkin(enabled)
-        if enabled then skinUpdateTimer = skinUpdateInterval end
+        if enabled then skinUpdateTimer:fill() end
     end,
 }

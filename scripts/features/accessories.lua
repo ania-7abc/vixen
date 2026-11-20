@@ -1,4 +1,6 @@
-require("scripts.util")
+local config = require("scripts.core.config")
+local events = require("scripts.core.events")
+local parts = require("scripts.core.parts")
 
 local partNames = {
     collar = "Collar",
@@ -16,7 +18,7 @@ local actions = {}
 
 local function getPart(key)
     local name = partNames[key]
-    return models.model.root.Body[name] or models.model.root[name]
+    return parts.root.Body[name] or parts.root[name]
 end
 
 local function apply(key, value)
@@ -34,9 +36,9 @@ end
 
 local accessories = {}
 
-function events.entity_init()
+events.on("entity_init", function ()
     -- the accessory cubes live on their own texture; make sure the parts use it
-    -- even if the global skin texture is overridden by scripts/skins.lua
+    -- even if the global skin texture is overridden by scripts/features/skins.lua
     local texture = textures["assets.accessories"] or textures:get("assets.accessories")
     if texture then
         for _, key in ipairs(keys) do
@@ -46,7 +48,7 @@ function events.entity_init()
     end
 
     for _, key in ipairs(keys) do
-        apply(key, safeConfigLoad(key, false))
+        apply(key, config.load(key, false))
     end
 
     if host:isHost() then
@@ -54,7 +56,7 @@ function events.entity_init()
             pings.setAccessory(key, state[key])
         end
     end
-end
+end)
 
 function accessories.setAction(key, action)
     actions[key] = action
@@ -66,7 +68,7 @@ function accessories.set(key, value)
     -- pings only reach other clients, so always apply locally as well
     apply(key, value)
     pings.setAccessory(key, value)
-    if host:isHost() then config:save(key, value) end
+    config.save(key, value)
 end
 
 accessories.keys = keys

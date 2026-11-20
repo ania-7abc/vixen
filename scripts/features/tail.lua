@@ -1,9 +1,11 @@
 -- inspired by Auriafoxgirl
 
-local options = require("scripts.options")
+local settings = require("scripts.core.settings")
+local parts = require("scripts.core.parts")
+local events = require("scripts.core.events")
 
-local tail = models.model.root.Tail.Actual
-local tailTarget = models.model.root.Tail.Target
+local tail = parts.tail
+local tailTarget = parts.tailTarget
 
 local oldBodyRot = vec(0, 0, 0)
 local oldTailRot = tail:getRot()
@@ -30,11 +32,11 @@ local function cosLerpAngle(from, to, range, minDelta)
     return math.lerpAngle(from, to, delta)
 end
 
-function events.tick()
+events.on("tick", function ()
     -- get player velocity
     local bodyRot = player:getBodyYaw(1)
     local playerVel = vectors.rotateAroundAxis(bodyRot, player:getVelocity(), vec(0, 1, 0))
-    
+
     -- body pitch
     local bodyPitch = 0
     local playerPose = player:getPose()
@@ -54,14 +56,14 @@ function events.tick()
         waterStrength = 0.5
         wagWalkSpeed = 0.5
     end
-    if not options.tailWag then wagWalkSpeed = 0 end
+    if not settings.tailWag then wagWalkSpeed = 0 end
     local playerVelRaw = vectors.rotateAroundAxis(bodyPitch, playerVel, vec(1, 0, 0))
 
     -- calculate body rotation difference
     local newBodyRot = vec(bodyPitch, bodyRot, 0)
     local deltaBodyRot = newBodyRot - oldBodyRot
     oldBodyRot = newBodyRot
-    -- calculate world space tail rotation 
+    -- calculate world space tail rotation
     oldTailRot = newTailRot
     newTailRot = newTailRot + deltaBodyRot
 
@@ -95,7 +97,7 @@ function events.tick()
     local speed = math.clamp(playerVel.z, -0.5, 0.5)
 
     -- calculate wag time
-    oldWagTime = newWagTime 
+    oldWagTime = newWagTime
     newWagTime = newWagTime + math.min(1, math.sqrt(math.abs(speed / 0.32))) * wagSpeed * waterStrength * wagWalkSpeed
     if newWagTime > 2 * math.pi then -- overflow for better precision
         newWagTime = newWagTime - 2 * math.pi
@@ -103,13 +105,13 @@ function events.tick()
     end
 
     -- calculate wag strength
-    if tailWagged then wagWalkSpeed = options.tailWag and 0.1 or 0 end -- wag less while its animated
+    if tailWagged then wagWalkSpeed = settings.tailWag and 0.1 or 0 end -- wag less while its animated
     oldWagStrength = newWagStrength
     newWagStrength = math.lerp(newWagStrength, speed * waterStrength * wagWalkSpeed, 0.1)
 
-end
+end)
 
-function events.render(delta)
+events.on("render", function (delta)
     -- interpolate wag values
     local wagTime = math.lerp(oldWagTime, newWagTime, delta)
     local wagStrength = math.lerp(oldWagStrength, newWagStrength, delta)
@@ -117,7 +119,7 @@ function events.render(delta)
     -- interpolate rotation
     local iRot = math.lerpAngle(oldTailRot, newTailRot, delta)
     tail:setRot(iRot + wagRot)
-end
+end)
 
 local tailModule = {
     flick = function (strength)

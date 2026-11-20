@@ -1,6 +1,8 @@
-require("scripts.util")
+-- Action wheel settings shared by all scripts.
 
--- action wheel settings shared by all scripts
+local config = require("scripts.core.config")
+local events = require("scripts.core.events")
+
 local defaults = {
     blinking = true,
     foxSounds = true,
@@ -12,13 +14,13 @@ local defaults = {
     idleAnims = true,
 }
 
-local options = {}
+local settings = {}
 local actions = {}
 local listeners = {}
 local pingSetters = {}
 
 for key, default in pairs(defaults) do
-    options[key] = default
+    settings[key] = default
 end
 
 local function notify(key, value)
@@ -30,9 +32,9 @@ local function notify(key, value)
 end
 
 local function set(key, value)
-    if options[key] == value then return end
-    options[key] = value
-    if host:isHost() then config:save(key, value) end
+    if settings[key] == value then return end
+    settings[key] = value
+    config.save(key, value)
     notify(key, value)
 end
 
@@ -44,26 +46,28 @@ for key in pairs(defaults) do
     pingSetters[key] = pings[pingName]
 end
 
-function options.setAction(key, action)
+function settings.setAction(key, action)
     actions[key] = action
-    action:setToggled(options[key])
+    action:setToggled(settings[key])
 end
 
-function options.onChange(key, func)
+function settings.onChange(key, func)
     if not listeners[key] then listeners[key] = {} end
     table.insert(listeners[key], func)
-    func(options[key])
+    func(settings[key])
 end
 
-function events.entity_init()
-    migrateConfig()
+function settings.onEntityInit()
+    config.migrate()
     for key, default in pairs(defaults) do
-        local value = safeConfigLoad(key, default)
-        if host:isHost() and value ~= options[key] then
+        local value = config.load(key, default)
+        if host:isHost() and value ~= settings[key] then
             set(key, value)
             pingSetters[key](value)
         end
     end
 end
 
-return options
+events.on("entity_init", settings.onEntityInit)
+
+return settings
