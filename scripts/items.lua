@@ -98,3 +98,7 @@ function events.render()
     setParentIfChanged(mouthIP, itemParent)
     setParentIfChanged(mouthTP, toolParent)
 end
+
+return {
+    isHandBusy = isHandBusy,
+}

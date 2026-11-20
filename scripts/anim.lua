@@ -2,6 +2,7 @@ require("scripts.util")
 require("scripts.sleep")
 
 local wheel = require("scripts.wheel")
+local items = require("scripts.items")
 
 local aurianims = require("scripts.aurianims")
 
@@ -85,10 +86,14 @@ end,
 )
 
 local vanillaHandsAnim = aurianims.stack{
-    aurianims.vanilla{
+    aurianims.vanilla({
         models.model.root.LeftArm,
         models.model.root.RightArm
-    },
+    }, function (_, name)
+        local handedness = player:isLeftHanded()
+        local heldItem = name == "RIGHT_ARM" and player:getHeldItem(handedness) or player:getHeldItem(not handedness)
+        return not items.isHandBusy(heldItem, player:isSprinting())
+    end),
     modelAnims.handOverride -- override hand animations so that they dont play twice
 }
 
