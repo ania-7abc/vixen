@@ -57,6 +57,8 @@ animController:setDriver(function (data)
     data.sprintScale = math.lerp(data.sprintScale, data.isSprinting and 1 or 0, 0.6)
     -- cross-fade standing and sneaking instead of cutting between the poses
     data.crouchBlend = math.lerp(data.crouchBlend, data.pose == "CROUCHING" and 1 or 0, 0.25)
+    -- sneaking has its own tail motion, so fade out the wagging animation
+    data.wagBlend = math.lerp(data.wagBlend, data.pose == "CROUCHING" and 0 or 1, 0.25)
 
     data.headTilt = math.lerp(data.headTilt, math.clamp(-velocity.y * 15, -25, 25), 0.3)
 
@@ -125,6 +127,7 @@ end,
     headTilt = 0,
     sprintScale = 0,
     crouchBlend = 0,
+    wagBlend = 1,
     smoothWalkScale = 0,
     smoothForwardScale = 0,
 }
@@ -462,6 +465,12 @@ local wheelSwapNode = aurianims.mix(
 )
 local wheelPoseAnim = wheelSwapNode
 
+local wagBlendAnim = aurianims.func(
+    function (data, blend)
+        animations.model.tailWag:blend(data.wagBlend)
+    end
+)
+
 local mainAnim = aurianims.stack{
     aurianims.mix(
         function (data)
@@ -474,6 +483,7 @@ local mainAnim = aurianims.stack{
         wheelPoseAnim
     ),
     earTwitchAnim,
+    wagBlendAnim,
 }
 
 animController:setTree(mainAnim)
