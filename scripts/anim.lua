@@ -77,7 +77,7 @@ animController:setDriver(function (data)
 
     -- cross-fade to the takeoff pose instead of snapping into it, and back to
     -- the running cycle once the jump cooldown is over
-    if data.jumpTime > 0.01 then
+    if data.isSprinting and data.jumpTime > 0.01 then
         data.takeoffBlend = math.min(1, data.takeoffBlend + 0.34)
     else
         data.takeoffBlend = math.max(0, data.takeoffBlend - 0.34)
