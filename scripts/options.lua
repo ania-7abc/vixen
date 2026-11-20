@@ -5,7 +5,6 @@ local defaults = {
     blinking = true,
     foxSounds = true,
     snoring = true,
-    autoSkin = false,
     tailWag = true,
 }
 
@@ -45,10 +44,6 @@ function pings.setSnoring(value)
     set("snoring", value)
 end
 
-function pings.setAutoSkin(value)
-    set("autoSkin", value)
-end
-
 function pings.setTailWag(value)
     set("tailWag", value)
 end
@@ -57,7 +52,6 @@ local pingSetters = {
     blinking = pings.setBlinking,
     foxSounds = pings.setFoxSounds,
     snoring = pings.setSnoring,
-    autoSkin = pings.setAutoSkin,
     tailWag = pings.setTailWag,
 }
 

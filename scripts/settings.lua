@@ -16,12 +16,4 @@ end
 addToggle("blinking", "blinking", "minecraft:ender_eye", "minecraft:ender_pearl", pings.setBlinking)
 addToggle("foxSounds", "fox sounds", "minecraft:sweet_berries", "minecraft:note_block", pings.setFoxSounds)
 addToggle("snoring", "snoring", "minecraft:hay_block", "minecraft:red_bed", pings.setSnoring)
-addToggle("autoSkin", "auto skin", "minecraft:command_block", "minecraft:rabbit_hide", pings.setAutoSkin)
 addToggle("tailWag", "tail wag", "minecraft:feather", "minecraft:sugar", pings.setTailWag)
-
-wheel.settingsPage:newAction()
-:setTitle("disable custom nameplate")
-:setItem("minecraft:name_tag")
-:onToggle(function (state)
-    pings.setNamePlate(not state)
-end)

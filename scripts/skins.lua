@@ -8,32 +8,26 @@ local skinEntries = {
     Rebecca = {
         texture = "assets.skin_rebecca",
         icon = "minecraft:redstone",
-        name = [=[[{"text":"Rebecca","color":"gold"}]]=],
     },
     Mira = {
         texture = "assets.skin_mira",
         icon = "minecraft:target",
-        name = [=[[{"text":"Mira","color":"red"}]]=],
     },
     Eva = {
         texture = "assets.skin_eva",
         icon = "minecraft:crimson_nylium",
-        name = [=[[{"text":"Eva","color":"dark_red"}]]=],
     },
     Rue = {
         texture = "assets.skin_rue",
         icon = "minecraft:red_sand",
-        name = [=[[{"text":"Rue","color":"gold"}]]=],
     },
     Kaya = {
         texture = "assets.skin_kaya",
         icon = "minecraft:snow_block",
-        name = [=[[{"text":"Kaya","color":"white"}]]=],
     },
     Thea = {
         texture = "assets.skin_thea",
         icon = "minecraft:coal_block",
-        name = [=[[{"text":"Thea","color":"dark_gray"}]]=],
     },
 }
 -- generate keys
@@ -43,8 +37,8 @@ end
 
 local function validateSkinEntries()
     for key, skin in pairs(skinEntries) do
-        if not skin.icon or not skin.name then
-            log("[vixen] skin " .. key .. " is missing its icon or name")
+        if not skin.icon then
+            log("[vixen] skin " .. key .. " is missing its icon")
         end
         if not skin.texture then
             log("[vixen] skin " .. key .. " is missing its texture")
@@ -63,20 +57,15 @@ validateSkinEntries()
 local currentSkin = skinEntries.Rebecca
 
 -- automatic skin updated based on the biome
+local autoSkinEnabled = false
 local skinUpdateInterval = 80
 local skinUpdateTimer = 0
-options.onChange("autoSkin", function (enabled)
-    if enabled then skinUpdateTimer = skinUpdateInterval end
-end)
-
--- nameplate overriding
-local overridePlayerName = true
-function pings.setNamePlate(override)
-    overridePlayerName = override
-    nameplate.ALL:setText(override and currentSkin.name or "${name}")
-    if host:isHost() then
-        config:save("overridePlayerName", override)
-    end
+local function setAutoSkin(enabled)
+    autoSkinEnabled = enabled
+    if host:isHost() then config:save("autoSkin", enabled) end
+end
+function pings.setAutoSkin(enabled)
+    setAutoSkin(enabled)
 end
 
 -- sleeping and blinking
@@ -122,7 +111,6 @@ local function setSkin(skin)
     models.model.root:setPrimaryTexture("CUSTOM", textures[skin.texture])
     appliedClosed = nil
     updateHeadTexture()
-    pings.setNamePlate(overridePlayerName)
     if host:isHost() then
         config:save("currentSkin", skin.key)
     end
@@ -149,7 +137,6 @@ wheel.skinPage:newAction()
     skinUpdateTimer = skinUpdateInterval
 end)
 
-
 local function updateAutoSkin()
     -- eva in nether
     local dimension = world.getDimension()
@@ -165,8 +152,8 @@ local function updateAutoSkin()
 
     local biome = world.getBiome(player:getPos())
     local temperature = biome:getTemperature()
-    
-    -- kaya in cold 
+
+    -- kaya in cold
     if temperature <= 0.25 then
         setSkin(skinEntries.Kaya)
         return
@@ -181,12 +168,11 @@ local function updateAutoSkin()
     setSkin(skinEntries.Rue)
 end
 
-
 function events.entity_init()
     -- load config
     if host:isHost() then
-        overridePlayerName = safeConfigLoad("overridePlayerName", overridePlayerName)
-        pings.setNamePlate(overridePlayerName)
+        autoSkinEnabled = safeConfigLoad("autoSkin", config:load("autoSkinEnabled") or false)
+        pings.setAutoSkin(autoSkinEnabled)
         pings.setSkin(safeConfigLoad("currentSkin", currentSkin.key))
     end
 end
@@ -195,7 +181,7 @@ function events.tick()
     sleep.setInBed(player:getPose() == "SLEEPING")
     tickBlink()
 
-    if not options.autoSkin then return end
+    if not autoSkinEnabled then return end
     if skinUpdateTimer < skinUpdateInterval then
         skinUpdateTimer = skinUpdateTimer + 1
         return

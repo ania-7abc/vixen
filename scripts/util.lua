@@ -1,17 +1,10 @@
-local CONFIG_VERSION = 2
+local CONFIG_VERSION = 1
 
 local migrations = {
     -- custom skins were removed in this fork, so saves must not point at one
     [1] = function ()
         if config:load("currentSkin") == "Custom" then
             config:save("currentSkin", "Rebecca")
-        end
-    end,
-    -- adaptive skin moved into the shared settings
-    [2] = function ()
-        if config:load("autoSkin") == nil then
-            local old = config:load("autoSkinEnabled")
-            if old ~= nil then config:save("autoSkin", old) end
         end
     end,
 }
