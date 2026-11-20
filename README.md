@@ -51,6 +51,7 @@ Shaders:
 - Wag the tail and ears from the action wheel (`Poses` page). Toggle it off to let the motion finish :3c
   - Ears have their own spring physics, reacting to movement and occasional twitches; can be tuned from `Settings` → `Visual`.
 - Occasional idle animations (sniffing, looking around, a quick shake) while standing still. Can be turned off in `Settings` → `Visual`.
+- Brief flinch animation when taking damage: the ears flatten and the tail tucks. Can be turned off in `Settings` → `Visual`.
 - 6 biome-themed skins (Forest, Desert, Winter, Shadow, Nether and End Fox). Can be changed manually from the action wheel; the active skin is highlighted in green.
 
 ![skins](./misc/skins.png)

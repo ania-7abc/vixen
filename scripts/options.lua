@@ -10,6 +10,7 @@ local defaults = {
     earTwitch = true,
     earPhysics = true,
     idleAnims = true,
+    hurtReactions = true,
 }
 
 local options = {}

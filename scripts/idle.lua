@@ -34,10 +34,19 @@ local animations = {
             return vec(0, 0, math.sin(t * math.pi * 10 / duration) * 7 * envelope(t, duration))
         end,
     },
+    flinch = {
+        duration = 0.6,
+        rot = function (t, duration)
+            local e = envelope(t, duration)
+            return vec(14 * e, 0, -5 * e)
+        end,
+    },
 }
 local idleNames = { "sniff", "look", "shake" }
 
 local active = nil
+local lastHealth = nil
+local hurtCooldown = 0
 
 function pings.playIdle(name, startTime)
     local entry = animations[name]
@@ -48,6 +57,9 @@ function pings.playIdle(name, startTime)
     elseif name == "shake" then
         ears.kick(vec(-16, 0, 5))
         tail.flick(18)
+    elseif name == "flinch" then
+        ears.kick(vec(22, 0, 0))
+        tail.flick(-14)
     end
 end
 
@@ -57,6 +69,24 @@ options.onChange("idleAnims", function (enabled)
         idleTimer = math.random(idleMinDelay, idleMaxDelay)
     end
 end)
+options.onChange("hurtReactions", function (enabled)
+    if not enabled and active and active.name == "flinch" then active = nil end
+end)
+
+local function tickHurt()
+    local health = player:getHealth()
+    if lastHealth then
+        if options.hurtReactions and health < lastHealth and health > 0 and hurtCooldown <= 0
+            and not sleep.isSleeping() and anim.activePose() == nil then
+            hurtCooldown = 10
+            pings.playIdle("flinch", client:getSystemTime())
+        elseif health > lastHealth then
+            hurtCooldown = 0
+        end
+    end
+    lastHealth = health
+    if hurtCooldown > 0 then hurtCooldown = hurtCooldown - 1 end
+end
 
 local function canPlayIdle()
     if not options.idleAnims then return false end
@@ -69,8 +99,14 @@ local function canPlayIdle()
     return player:getVelocity():lengthSquared() < 0.01
 end
 
+function events.entity_init()
+    lastHealth = nil
+    hurtCooldown = 0
+end
+
 function events.tick()
     if not player:isLoaded() then return end
+    tickHurt()
 
     if active then
         local elapsed = (client:getSystemTime() - active.start) / 1000
