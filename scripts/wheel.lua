@@ -2,7 +2,6 @@ require("scripts.util")
 
 local anim = require("scripts.anim")
 local skins = require("scripts.skins")
-local sleep = require("scripts.sleep")
 local sounds = require("scripts.sounds")
 local options = require("scripts.options")
 
@@ -96,10 +95,7 @@ wagAction = posePage:newAction()
 :setItem("minecraft:feather")
 :setToggleItem("minecraft:sugar")
 :onToggle(function (state, _)
-    if state and sleep.isSleeping() then
-        wagAction:setToggled(false)
-        return
-    end
+    if state and anim.activePose() == "wSleep" then anim.stop() end
     anim.wag(state)
 end)
 
