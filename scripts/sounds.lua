@@ -60,13 +60,13 @@ function events.on_play_sound(id, pos, vol, pitch, loop, category)
 end
 
 -- snoring
-local snoreingInterval = 60
+local snoringInterval = 60
 local snoringTimer = 0
 function events.tick()
     local isSleeping = player:getPose() == "SLEEPING"
     if not isSleeping then return end
 
-    if snoringTimer < snoreingInterval then 
+    if snoringTimer < snoringInterval then 
         snoringTimer = snoringTimer + 1
     else
         snoringTimer = 0

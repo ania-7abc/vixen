@@ -31,19 +31,6 @@ local skinEntries = {
         icon = "minecraft:coal_block",
         name = [=[[{"text":"Thea","color":"dark_gray"}]]=],
     },
-    --[[ remove this line and its pair to uncomment and enable the custom skin
-
-    Custom = { -- replace "Custom" to the name that should show in the tooltip when selecting the skin
-        texture = "assets.skin_custom", -- do NOT change this line
-
-        icon = "minecraft:structure_block", -- change this to the block/item you want as the icon
-        
-        -- change this to the display name you want (https://minecraft.tools/en/json_text.php)
-        -- dont forget the [=[...]=] to escape special characters
-        name = [=[ [{"text":"Cu","color":"dark_aqua"},{"text":"s","color":"green"},{"text":"t","color":"yellow"},{"text":"om","color":"red"}] ]=],
-    },
-    
-    ]]-- the pair line in question that you also have to remove
 }
 -- generate keys
 for key, value in pairs(skinEntries) do
@@ -65,7 +52,9 @@ local overridePlayerName = true
 function pings.setNamePlate(override)
     overridePlayerName = override
     nameplate.ALL:setText(override and currentSkin.name or "${name}")
-    config:save("overridePlayerName", override)
+    if host:isHost() then
+        config:save("overridePlayerName", override)
+    end
 end
 
 -- sleeping
@@ -87,10 +76,12 @@ local function setSkin(skin)
     models.model.root:setPrimaryTexture("CUSTOM", textures[skin.texture])
     setSkinSleepingTexture(isSleeping)
     pings.setNamePlate(overridePlayerName)
-    config:save("currentSkin", skin.key)
+    if host:isHost() then
+        config:save("currentSkin", skin.key)
+    end
 end
-function pings.setSkin(skin)
-    setSkin(skin)
+function pings.setSkin(skinKey)
+    setSkin(skinEntries[skinKey] or currentSkin)
 end
 
 -- skin entries
@@ -100,7 +91,7 @@ for key, value in pairs(skinEntries) do
     :setItem(value.icon)
     :onLeftClick(function (_)
         setAutoSkin(false)
-        pings.setSkin(value)
+        pings.setSkin(value.key)
     end)
 end
 wheel.skinPage:newAction()
@@ -150,7 +141,7 @@ function events.entity_init()
         overridePlayerName = safeConfigLoad("overridePlayerName", overridePlayerName)
         pings.setNamePlate(overridePlayerName)
         setAutoSkin(safeConfigLoad("autoSkinEnabled", autoSkinEnabled))
-        pings.setSkin(skinEntries[safeConfigLoad("currentSkin", currentSkin.key)])
+        pings.setSkin(safeConfigLoad("currentSkin", currentSkin.key))
     end
 end
 

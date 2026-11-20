@@ -7,12 +7,12 @@ local oldBodyRot = vec(0, 0, 0)
 local oldTailRot = tail:getRot()
 local newTailRot = oldTailRot
 
-local wagStrenghtMax = 0.75
+local wagStrengthMax = 0.75
 local wagSpeed = 0.75
 local oldWagTime = 0
-local oldWagStrenght = 0
+local oldWagStrength = 0
 local newWagTime = 0
-local newWagStrenght = 0
+local newWagStrength = 0
 
 -- clamp an angle between min and max
 local function clampAngle(angle, min, max)
@@ -87,9 +87,9 @@ function events.tick()
     targetRot.x = clampAngle(targetRot.x, -45, 60)
     targetRot.y = clampAngle(targetRot.y, -60, 60)
     -- lerp towards the target angle
-    local lerpStrenght = tailAnimated and 0.5 or 0.1
-    newTailRot.x = cosLerpAngle(newTailRot.x, targetRot.x, 90, lerpStrenght)
-    newTailRot.y = cosLerpAngle(newTailRot.y, targetRot.y, 180, lerpStrenght)
+    local lerpStrength = tailAnimated and 0.5 or 0.1
+    newTailRot.x = cosLerpAngle(newTailRot.x, targetRot.x, 90, lerpStrength)
+    newTailRot.y = cosLerpAngle(newTailRot.y, targetRot.y, 180, lerpStrength)
 
     local speed = math.clamp(playerVel.z, -0.5, 0.5)
 
@@ -101,18 +101,18 @@ function events.tick()
         oldWagTime = oldWagTime - 2 * math.pi
     end
 
-    -- calculate wag strenght
+    -- calculate wag strength
     if tailWagged then wagWalkSpeed = 0.1 end -- wag less while its animated
-    oldWagStrenght = newWagStrenght
-    newWagStrenght = math.lerp(newWagStrenght, speed * waterStrength * wagWalkSpeed, 0.1)
+    oldWagStrength = newWagStrength
+    newWagStrength = math.lerp(newWagStrength, speed * waterStrength * wagWalkSpeed, 0.1)
 
 end
 
 function events.render(delta)
     -- interpolate wag values
     local wagTime = math.lerp(oldWagTime, newWagTime, delta)
-    local wagStrenght = math.lerp(oldWagStrenght, newWagStrenght, delta)
-    local wagRot = vec(0, math.deg((math.cos(wagTime))) * wagStrenght * wagStrenghtMax, 0)
+    local wagStrength = math.lerp(oldWagStrength, newWagStrength, delta)
+    local wagRot = vec(0, math.deg((math.cos(wagTime))) * wagStrength * wagStrengthMax, 0)
     -- interpolate rotation
     local iRot = math.lerpAngle(oldTailRot, newTailRot, delta)
     tail:setRot(iRot + wagRot)
