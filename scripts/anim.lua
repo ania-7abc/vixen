@@ -312,25 +312,50 @@ local bendKneesToVanilla = aurianims.func(
     end
 )
 
+local directionalFlyAnim = aurianims.step(
+    function (data)
+        return data.velocity.y > 0.1
+    end,
+    modelAnims.tiltUp,
+    aurianims.step(
+        function (data)
+            return data.velocity.y < -0.1
+        end,
+        modelAnims.tiltDown,
+        modelAnims.fly
+    )
+)
+
+local flightAnim = aurianims.stack{
+    directionalFlyAnim,
+    bendKneesToVanilla,
+}
+
 local playerAnim = aurianims.step(
     function (data)
-        return data.pose == "SWIMMING" or data.pose == "FALL_FLYING" or data.pose == "SPIN_ATTACK"
+        return data.pose == "FALL_FLYING" or data.pose == "SPIN_ATTACK"
     end,
-    bendKneesToVanilla,
-    aurianims.switch(
+    flightAnim,
+    aurianims.step(
         function (data)
-            return data.pose
+            return data.pose == "SWIMMING"
         end,
-        {
-            SLEEPING = modelAnims.sleep,
-            SITTING = modelAnims.sit,
-            CROUCHING = crouchAnim,
-            STANDING = aurianims.stack{
-                movementAnim,
-                eatingAnim,
-                drinkingAnim,
+        bendKneesToVanilla,
+        aurianims.switch(
+            function (data)
+                return data.pose
+            end,
+            {
+                SLEEPING = modelAnims.sleep,
+                SITTING = modelAnims.sit,
+                CROUCHING = crouchAnim,
+                STANDING = aurianims.stack{
+                    movementAnim,
+                    eatingAnim,
+                    drinkingAnim,
+                }
             }
-        }
+        )
     )
 )
 
