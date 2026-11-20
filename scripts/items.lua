@@ -30,6 +30,17 @@ local drinkExtra = {
     "minecraft:milk_bucket",
 }
 
+-- these items have hand animations that break if the item is moved to the mouth
+local specialUseActions = {
+    BLOCK = true,
+    BOW = true,
+    SPEAR = true,
+    CROSSBOW = true,
+    SPYGLASS = true,
+    TOOT_HORN = true,
+    BRUSH = true,
+}
+
 local function isMouthTool(item)
     if item:isTool() then return true end
     if item.id:find("_sword") then return true end
@@ -52,10 +63,12 @@ end
 -- with the setting on, a lone item in either hand goes to the mouth while sprinting
 local function singleMouthOffhand(sprinting)
     if not options.allInMouth or not sprinting then return nil end
-    local main = hasItem(player:getHeldItem())
-    local off = hasItem(player:getHeldItem(true))
-    if main and not off then return false end
-    if off and not main then return true end
+    local mainItem = player:getHeldItem()
+    local offItem = player:getHeldItem(true)
+    local main = hasItem(mainItem)
+    local off = hasItem(offItem)
+    if main and not off and not specialUseActions[mainItem:getUseAction()] then return false end
+    if off and not main and not specialUseActions[offItem:getUseAction()] then return true end
     return nil
 end
 

@@ -47,7 +47,7 @@ Shaders:
 - Custom animations! Too many to list. Watch the trailers!
   - Extra poses can be played from the `Poses` page; moving stops the pose. `Sleep` also plays the fox sleep call.
   - Closed eyes during sleep.
-- Hold certain items in the mouth. Tools will also be held in the mouth while sprinting. The `All in mouth` setting makes a single held item go to the mouth while sprinting; with two held items the usual rules apply. You can modify which items and tools are held in the mouth in `scripts/items.lua`.
+- Hold certain items in the mouth. Tools will also be held in the mouth while sprinting. The `All in mouth` setting makes a single held item go to the mouth while sprinting; with two held items or items with hand animations (shields, bows, crossbows, tridents, spyglasses, etc.) the usual rules apply. You can modify which items and tools are held in the mouth in `scripts/items.lua`.
 - Wag the tail and ears from the action wheel (`Poses` page). Toggle it off to let the motion finish :3c
 - 6 biome-themed skins (Forest, Desert, Winter, Shadow, Nether and End Fox). Can be changed manually from the action wheel.
 
