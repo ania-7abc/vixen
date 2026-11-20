@@ -51,6 +51,7 @@ addPageLink("Settings", "minecraft:totem_of_undying", settingsPage)
 
 -- poses: the sleep pose also plays the fox sleep call
 local poseActions = {}
+local wagAction
 poseActions.wSleep = posePage:newAction()
 :setTitle("Sleep")
 :setItem("minecraft:red_bed")
@@ -58,6 +59,8 @@ poseActions.wSleep = posePage:newAction()
     if anim.activePose() == "wSleep" then
         anim.stop()
     else
+        wagAction:setToggled(false)
+        anim.wag(false)
         anim.sleep()
         sounds.play("sleep")
     end
@@ -86,7 +89,7 @@ function events.tick()
     end
 end
 
-posePage:newAction()
+wagAction = posePage:newAction()
 :setTitle("Wag tail")
 :setToggleTitle("Wagging")
 :setItem("minecraft:feather")
