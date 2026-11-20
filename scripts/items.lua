@@ -43,6 +43,15 @@ local function isMouthDrink(item)
     return contains(drinkExtra, item.id)
 end
 
+local function mouthActions(item, sprinting)
+    local drink = isMouthDrink(item)
+    return {
+        drink = drink,
+        item = isMouthItem(item) and not drink,
+        tool = isMouthTool(item) and sprinting,
+    }
+end
+
 local mouthIP = models.model.root.Head.MouthIPivot
 local mouthTP = models.model.root.Head.MouthTPivot
 local mouthDP = models.model.root.Head.MouthDPivot
@@ -67,11 +76,10 @@ function events.tick()
     local rightHandItem = leftHanded and offHandItem or mainHandItem
     local leftHandItem = leftHanded and mainHandItem or offHandItem
 
-    local item = isMouthItem(mainHandItem)
-    local tool = isMouthTool(mainHandItem)
-    local drink = isMouthDrink(mainHandItem)
-    local block = mainHandItem:isBlockItem() or offHandItem:isBlockItem()
     local sprinting = player:isSprinting()
+    local mainMouth = mouthActions(mainHandItem, sprinting)
+    local offMouth = mouthActions(offHandItem, sprinting)
+    local block = mainHandItem:isBlockItem() or offHandItem:isBlockItem()
     local mainHandPivot = leftHanded and "LeftItemPivot" or "RightItemPivot"
     local offHandPivot = leftHanded and "RightItemPivot" or "LeftItemPivot"
 
@@ -81,7 +89,17 @@ function events.tick()
     setParentIfChanged(rightIP, isHandBusy(rightHandItem, sprinting) and "None" or "RightItemPivot")
     setParentIfChanged(leftIP, isHandBusy(leftHandItem, sprinting) and "None" or "LeftItemPivot")
 
-    mouthDP:setParentType(drink and mainHandPivot or "None")
-    mouthIP:setParentType(item and not drink and mainHandPivot or "None")
-    mouthTP:setParentType(tool and sprinting and mainHandPivot or "None")
+    -- prefer the main hand, then the off hand; drinks win over food and tools
+    local function mouthPivot(action)
+        if mainMouth[action] then return mainHandPivot end
+        if offMouth[action] then return offHandPivot end
+        return "None"
+    end
+    local drinkParent = mouthPivot("drink")
+    local itemParent = drinkParent == "None" and mouthPivot("item") or "None"
+    local toolParent = drinkParent == "None" and itemParent == "None" and mouthPivot("tool") or "None"
+
+    mouthDP:setParentType(drinkParent)
+    mouthIP:setParentType(itemParent)
+    mouthTP:setParentType(toolParent)
 end
