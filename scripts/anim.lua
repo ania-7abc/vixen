@@ -104,13 +104,10 @@ animController:setDriver(function (data)
     -- fade wheel poses in and out instead of snapping into them
     data.wheelBlend = math.lerp(data.wheelBlend, data.wheel and 1 or 0, 0.2)
     data.poseSwapBlend = math.lerp(data.poseSwapBlend, 1, 0.2)
-    if not data.wheel and data.wheelBlend < 0.01 then data.wheelPose = nil end
 end,
 {
     wheel = false,
     wheelBlend = 0,
-    wheelPose = nil,
-    prevPose = nil,
     poseSwapBlend = 1,
     isOnGround = false,
     airTime = 0,
@@ -397,19 +394,13 @@ local headTiltAnim = aurianims.func(
     end
 )
 
-local wheelAnims = {
-    wSleep = modelAnims.wSleep,
-    wSit = modelAnims.wSit,
-    wSitAlt = modelAnims.wSitAlt,
-}
-
--- start the swap at the old pose so the new one fades in without an idle frame
+-- blend the two pose animations directly, so a swap never drops to the idle pose
 local wheelSwapNode = aurianims.mix(
     function (data)
         return data.poseSwapBlend
     end,
-    aurianims.switch(function (data) return data.prevPose end, wheelAnims),
-    aurianims.switch(function (data) return data.wheelPose end, wheelAnims)
+    nil,
+    nil
 )
 local wheelPoseAnim = wheelSwapNode
 
@@ -446,15 +437,26 @@ function pings.stopWheelAnim()
 end
 function pings.playWheelAnim(animName)
     wheelAnimPos = player:getPos()
-    if wheelAnimName and wheelAnimName ~= animName then
-        animController.data.prevPose = wheelAnimName
-        animController.data.poseSwapBlend = 0
-        -- keep the renderer on the old pose until the next tick starts the fade
-        wheelSwapNode.blend = 0
-        wheelSwapNode.oldBlend = 0
+    if wheelAnimName then
+        if wheelAnimName ~= animName then
+            wheelSwapNode.anim1 = modelAnims[wheelAnimName]
+            wheelSwapNode.anim2 = modelAnims[animName]
+            wheelSwapNode.anim1:play()
+            wheelSwapNode.anim2:play()
+            wheelSwapNode.anim2:setBlend(0)
+            -- start the fade on the old pose, so the new one never replaces an empty frame
+            animController.data.poseSwapBlend = 0
+            wheelSwapNode.blend = 0
+            wheelSwapNode.oldBlend = 0
+        end
+    else
+        wheelSwapNode.anim1 = nil
+        wheelSwapNode.anim2 = modelAnims[animName]
+        animController.data.poseSwapBlend = 1
+        wheelSwapNode.blend = 1
+        wheelSwapNode.oldBlend = 1
     end
     wheelAnimName = animName
-    animController.data.wheelPose = animName
     animController.data.wheel = true
 end
 
