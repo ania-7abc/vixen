@@ -85,10 +85,7 @@ poseActions.wSitAlt = posePage:newAction()
 end)
 
 local extraPoses = {
-    { name = "wBow", title = "Play bow", item = "minecraft:bone" },
-    { name = "wStretch", title = "Stretch", item = "minecraft:rabbit_foot" },
     { name = "wCurious", title = "Curious tilt", item = "minecraft:compass" },
-    { name = "wBack", title = "On back", item = "minecraft:light_gray_bed" },
     { name = "wCurl", title = "Curl up", item = "minecraft:hay_block" },
 }
 for _, pose in ipairs(extraPoses) do
