@@ -2,6 +2,7 @@ require("scripts.util")
 
 local wheel = require("scripts.wheel")
 local sleep = require("scripts.sleep")
+local options = require("scripts.options")
 
 local skinEntries = {
     Rebecca = {
@@ -62,13 +63,11 @@ validateSkinEntries()
 local currentSkin = skinEntries.Rebecca
 
 -- automatic skin updated based on the biome
-local autoSkinEnabled = false
 local skinUpdateInterval = 80
 local skinUpdateTimer = 0
-local function setAutoSkin(enabled)
-    autoSkinEnabled = enabled
-    config:save("autoSkinEnabled", enabled)
-end
+options.onChange("autoSkin", function (enabled)
+    if enabled then skinUpdateTimer = skinUpdateInterval end
+end)
 
 -- nameplate overriding
 local overridePlayerName = true
@@ -95,8 +94,15 @@ local function updateHeadTexture()
     models.model.root.Head:setPrimaryTexture("CUSTOM", textures[closed and (currentSkin.texture .. "_sleep") or currentSkin.texture])
 end
 sleep.onChange(updateHeadTexture)
+options.onChange("blinking", function (enabled)
+    if not enabled then
+        blinkTicks = 0
+        updateHeadTexture()
+    end
+end)
 
 local function tickBlink()
+    if not options.blinking then return end
     if blinkTicks > 0 then
         blinkTicks = blinkTicks - 1
         if blinkTicks == 0 then updateHeadTexture() end
@@ -131,7 +137,7 @@ for key, value in pairs(skinEntries) do
     :setTitle(key)
     :setItem(value.icon)
     :onLeftClick(function (_)
-        setAutoSkin(false)
+        pings.setAutoSkin(false)
         pings.setSkin(value.key)
     end)
 end
@@ -139,7 +145,7 @@ wheel.skinPage:newAction()
 :setTitle("auto")
 :setItem("minecraft:command_block")
 :onLeftClick(function (_)
-    setAutoSkin(true)
+    pings.setAutoSkin(true)
     skinUpdateTimer = skinUpdateInterval
 end)
 
@@ -178,11 +184,9 @@ end
 
 function events.entity_init()
     -- load config
-    migrateConfig()
     if host:isHost() then
         overridePlayerName = safeConfigLoad("overridePlayerName", overridePlayerName)
         pings.setNamePlate(overridePlayerName)
-        setAutoSkin(safeConfigLoad("autoSkinEnabled", autoSkinEnabled))
         pings.setSkin(safeConfigLoad("currentSkin", currentSkin.key))
     end
 end
@@ -191,7 +195,7 @@ function events.tick()
     sleep.setInBed(player:getPose() == "SLEEPING")
     tickBlink()
 
-    if not autoSkinEnabled then return end
+    if not options.autoSkin then return end
     if skinUpdateTimer < skinUpdateInterval then
         skinUpdateTimer = skinUpdateTimer + 1
         return

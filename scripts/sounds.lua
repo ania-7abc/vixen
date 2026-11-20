@@ -1,5 +1,6 @@
 local wheel = require("scripts.wheel")
 local sleep = require("scripts.sleep")
+local options = require("scripts.options")
 
 -- soundboard sounds
 local soundboardEntries = {
@@ -48,7 +49,8 @@ function events.on_play_sound(id, pos, vol, pitch, loop, category)
     if not player:isLoaded() then return end
     if category ~= "PLAYERS" then return end
     if not ((pos - player:getPos()):length() < 0.1) then return end
-    
+    if not options.foxSounds then return end
+
     if soundLUT[id] then
         sounds:playSound(soundLUT[id], pos, vol, pitch, loop)
         return true
@@ -58,7 +60,11 @@ end
 -- snoring
 local snoringInterval = 60
 local snoringTimer = 0
+options.onChange("snoring", function (enabled)
+    if not enabled then snoringTimer = 0 end
+end)
 function events.tick()
+    if not options.snoring then return end
     if not sleep.isSleeping() then return end
 
     if snoringTimer < snoringInterval then 
