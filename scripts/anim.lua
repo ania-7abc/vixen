@@ -89,10 +89,14 @@ local vanillaHandsAnim = aurianims.stack{
     aurianims.vanilla({
         models.model.root.LeftArm,
         models.model.root.RightArm
-    }, function (_, name)
+    }, function (name, rot)
         local handedness = player:isLeftHanded()
         local heldItem = name == "RIGHT_ARM" and player:getHeldItem(handedness) or player:getHeldItem(not handedness)
-        return not items.isHandBusy(heldItem, player:isSprinting())
+        if not items.isHandBusy(heldItem, player:isSprinting()) then return end
+
+        -- vanilla halves the arm swing and tilts it down 18 degrees for held items;
+        -- undo only that part so the arm keeps moving naturally
+        rot.x = (rot.x + 18) * 2
     end),
     modelAnims.handOverride -- override hand animations so that they dont play twice
 }

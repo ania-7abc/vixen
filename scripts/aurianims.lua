@@ -114,9 +114,9 @@ end
 
 ---creates vanilla leaf node, allows to use vanilla animations with blending
 ---@param parts ModelPart[]
----@param filter fun(data: table, name: string): boolean?
+---@param adjust? fun(name: string, rot: Vector3): boolean? return false to skip the part
 ---@return aurianims.node
-function lib.vanilla(parts, filter)
+function lib.vanilla(parts, adjust)
    local part_list = {}
 
    for _, part in ipairs(parts) do
@@ -130,7 +130,7 @@ function lib.vanilla(parts, filter)
    return {
       type = 'vanilla',
       part_list = part_list,
-      filter = filter
+      adjust = adjust
    }
 end
 
@@ -227,9 +227,15 @@ nodesUpdateRender = {
          if name == "HEAD" then
             rot[2] = ((rot[2] + 180) % 360) - 180
          end
-         rot:scale(blendMul)
 
-         local apply = not node.filter or node.filter(controller.data, name)
+         local apply = true
+         if node.adjust then
+            apply = node.adjust(name, rot) ~= false
+         end
+         if apply then
+            rot:scale(blendMul)
+         end
+
          for _, p in ipairs(parts) do
             -- blend only if the part has an override to avoide double vanilla rotation
             if apply and p:overrideVanillaRot() then
