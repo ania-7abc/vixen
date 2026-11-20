@@ -63,7 +63,6 @@ animController:setDriver(function (data)
 
     data.oldOnGround = data.isOnGround
     data.isOnGround = onGround
-    data.groundTime = data.isOnGround and data.groundTime + 1 or 0
     data.airTime = data.isOnGround and 0 or data.airTime + 1
 
     data.jumpTime = data.jumpTime * 0.85
@@ -76,7 +75,6 @@ end,
 {
     wheel = false,
     isOnGround = false,
-    groundTime = 0,
     airTime = 0,
     jumpTime = 0,
     headTilt = 0,

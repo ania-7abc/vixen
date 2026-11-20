@@ -3,8 +3,6 @@ local lib = {}
 ---@class aurianims.controller
 local animController = {}
 animController.__index = animController
----@class aurianims.node
-local nodeClass = {type = nil}
 
 local controllers = {}
 
@@ -63,20 +61,6 @@ function lib.stack(anims)
    return {
       type = 'stack',
       anims = anims
-   }
-end
-
----creates blend node, allows to control how much animation will be used depending on return value from function 
----@param func fun(data: table, old: number, anim: aurianims.node|Animation): blend: number, instant: boolean?
----@param anim aurianims.node[]|Animation[]
----@return aurianims.node
-function lib.blend(func, anim)
-   return {
-      type = 'blend',
-      func = func,
-      anim = anim,
-      blend = 0,
-      oldBlend = 0
    }
 end
 
@@ -174,14 +158,6 @@ nodesUpdate = {
          update(controller, v, blendMul)
       end
    end,
-   blend = function(controller, node, blendMul)
-      node.oldBlend = node.blend
-      local blend, instant = node.func(controller.data, node.blend, node.anim)
-      blend = math.clamp(blend, 0, 1)
-      node.blend = blend
-      if instant then node.oldBlend = blend end
-      update(controller, node.anim, blendMul * blend)
-   end,
    conditional = function(controller, node, blendMul)
       local cond = node.func(controller.data, node.anim)
       update(controller, node.anim, blendMul * (cond and 1 or 0))
@@ -227,10 +203,6 @@ nodesUpdateRender = {
       for _, v in ipairs(node.anims) do
          updateRender(delta, controller, v, blendMul)
       end
-   end,
-   blend = function(delta, controller, node, blendMul)
-      local blend = math.lerp(node.oldBlend, node.blend, delta)
-      updateRender(delta, controller, node.anim, blendMul * blend)
    end,
    conditional = function(delta, controller, node, blendMul)
       local cond = node.func(controller.data, node.anim)

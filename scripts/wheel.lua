@@ -59,7 +59,6 @@ mainPage:newAction()
 end)
 
 return {
-    mainPage = mainPage,
     skinPage = skinPage,
     soundboardPage= soundboardPage,
     animPage = animPage,

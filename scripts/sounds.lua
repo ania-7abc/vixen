@@ -31,10 +31,6 @@ local soundboardEntries = {
         icon = "minecraft:arrow",
         sound = "minecraft:entity.fox.spit",
     },
-    -- hurt = {
-    --     icon = "minecraft:heartbreak_pottery_sherd",
-    --     sound = "minecraft:entity.fox.hurt",
-    -- },
     sleep = {
         icon = "minecraft:red_bed",
         sound = "minecraft:entity.fox.sleep",
@@ -53,8 +49,7 @@ function events.on_play_sound(id, pos, vol, pitch, loop, category)
     if category ~= "PLAYERS" then return end
     if not ((pos - player:getPos()):length() < 0.1) then return end
     
-    --if id:find("step") then return true end
-    if soundLUT[id] ~= nil and soundLUT[id] ~= 0 then
+    if soundLUT[id] then
         sounds:playSound(soundLUT[id], pos, vol, pitch, loop)
         return true
     end
