@@ -59,22 +59,28 @@ end
 
 -- sleeping
 local isSleeping = false
-local function setSkinSleepingTexture(enabled)
-    models.model.root.Head:setPrimaryTexture("CUSTOM", textures[enabled and (currentSkin.texture .. "_sleep") or currentSkin.texture])
+local wheelSleeping = false
+local appliedSleeping = nil
+local function updateSkinSleepingTexture()
+    local sleeping = isSleeping or wheelSleeping
+    if appliedSleeping == sleeping then return end
+    appliedSleeping = sleeping
+    models.model.root.Head:setPrimaryTexture("CUSTOM", textures[sleeping and (currentSkin.texture .. "_sleep") or currentSkin.texture])
 end
 local function setSkinSleeping(enabled)
-    if isSleeping == enabled then return end
     isSleeping = enabled
-    setSkinSleepingTexture(isSleeping)
+    updateSkinSleepingTexture()
 end
 function pings.setSkinSleeping(enabled)
-    setSkinSleepingTexture(enabled)
+    wheelSleeping = enabled
+    updateSkinSleepingTexture()
 end
 local function setSkin(skin)
     if currentSkin == skin then return end
     currentSkin = skin
     models.model.root:setPrimaryTexture("CUSTOM", textures[skin.texture])
-    setSkinSleepingTexture(isSleeping)
+    appliedSleeping = nil
+    updateSkinSleepingTexture()
     pings.setNamePlate(overridePlayerName)
     if host:isHost() then
         config:save("currentSkin", skin.key)
