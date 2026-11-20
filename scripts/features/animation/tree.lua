@@ -22,12 +22,16 @@ function tree.setup(controller)
             local heldItem = player:getHeldItem(offhand)
             if not items.isHandBusy(heldItem, player:isSprinting(), offhand) then return end
 
-            -- vanilla halves the walk swing and tilts the arm down 18 degrees for held items.
-            -- undo the pose, but take the missing half of the swing from the matching leg:
-            -- both use the same walk cycle, but in antiphase, and the leg has no item pose
-            -- or idle bob, so doubling the arm rotation would double the bob as well
+            -- the item is routed to the mouth, but vanilla still sees it in the
+            -- hand and puts the arm into a grip pose. Drop that vanilla pose
+            -- completely instead of only subtracting its 18 degree tilt: the
+            -- remaining rotation still reads as "holding an item" from any view.
+            -- Keep the natural walk swing from the matching leg (arms and legs
+            -- are in antiphase and the leg has no item pose or idle bob).
             local leg = name == "RIGHT_ARM" and vanilla_model.RIGHT_LEG or vanilla_model.LEFT_LEG
-            rot.x = rot.x - 18 - leg:getOriginRot().x / 2.8
+            rot.x = -leg:getOriginRot().x / 2.8
+            rot.y = 0
+            rot.z = 0
         end),
         modelAnims.handOverride -- override hand animations so that they dont play twice
     }
