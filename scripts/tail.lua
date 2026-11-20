@@ -118,3 +118,11 @@ function events.render(delta)
     local iRot = math.lerpAngle(oldTailRot, newTailRot, delta)
     tail:setRot(iRot + wagRot)
 end
+
+local tailModule = {
+    flick = function (strength)
+        newTailRot.y = newTailRot.y + strength
+    end,
+}
+
+return tailModule

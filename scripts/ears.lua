@@ -61,3 +61,11 @@ function events.render(delta)
         ear.part:offsetRot(math.lerpAngle(ear.old, ear.rot, delta))
     end
 end
+
+function ears.kick(force)
+    for _, ear in ipairs(ears) do
+        ear.vel:add(force)
+    end
+end
+
+return ears
