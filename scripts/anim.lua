@@ -62,12 +62,14 @@ animController:setDriver(function (data)
     data.smoothWalkScale = math.lerp(data.smoothWalkScale, data.walkScale, 0.5)
     data.smoothForwardScale = math.lerp(data.smoothForwardScale, math.clamp(data.forwardSpeed * speedMult, -1, 1), 0.5)
 
+    local oldGroundTime = data.groundTime
     data.oldOnGround = data.isOnGround
     data.isOnGround = onGround
     data.airTime = data.isOnGround and 0 or data.airTime + 1
+    data.groundTime = data.isOnGround and data.groundTime + 1 or 0
 
     data.jumpTime = data.jumpTime * 0.85
-    if not data.isOnGround and data.oldOnGround and velocity.y > 0.1 then
+    if not data.isOnGround and data.oldOnGround and oldGroundTime > 2 and velocity.y > 0.1 then
         data.jumpTime = math.min(velocity.y * 8, 2)
     elseif data.isOnGround then
         data.jumpTime = math.lerp(data.jumpTime, 0, 0.6)
@@ -77,6 +79,7 @@ end,
     wheel = false,
     isOnGround = false,
     airTime = 0,
+    groundTime = 0,
     jumpTime = 0,
     headTilt = 0,
     sprintScale = 0,
@@ -242,11 +245,17 @@ local twoLeggedAnim = aurianims.stack{
     legMovementAnim
 }
 
--- sprintJumpUp/Down are the same cycle as sprint, with jumpUp holding its first
--- frame. Switching between them restarts the animation every time the predicate
--- flickers, which looks like trembling, so just keep the cycle running.
+-- upstream holds the first sprint frame while jumping and briefly after landing.
+-- jumpTime only decays, so this switches once per jump instead of flickering;
+-- sprintJumpUp is that exact first frame, so returning to sprint stays seamless.
 local fourLeggedAnim = aurianims.stack{
-    modelAnims.sprint
+    aurianims.step(
+        function (data)
+            return data.jumpTime > 0.01
+        end,
+        modelAnims.sprintJumpUp,
+        modelAnims.sprint
+    )
 }
 
 local movementAnim = aurianims.mix(
