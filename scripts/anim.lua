@@ -94,9 +94,12 @@ local vanillaHandsAnim = aurianims.stack{
         local heldItem = name == "RIGHT_ARM" and player:getHeldItem(handedness) or player:getHeldItem(not handedness)
         if not items.isHandBusy(heldItem, player:isSprinting()) then return end
 
-        -- vanilla halves the arm swing and tilts it down 18 degrees for held items;
-        -- undo only that part so the arm keeps moving naturally
-        rot.x = (rot.x - 18) * 2
+        -- vanilla halves the walk swing and tilts the arm down 18 degrees for held items.
+        -- undo the pose, but take the missing half of the swing from the matching leg:
+        -- both use the same walk cycle, while the leg has no item pose or idle bob,
+        -- so doubling this way would not double the bob as well
+        local leg = name == "RIGHT_ARM" and vanilla_model.RIGHT_LEG or vanilla_model.LEFT_LEG
+        rot.x = rot.x - 18 + leg:getOriginRot().x / 2.8
     end),
     modelAnims.handOverride -- override hand animations so that they dont play twice
 }
