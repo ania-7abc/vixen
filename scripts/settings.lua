@@ -1,4 +1,23 @@
 local wheel = require("scripts.wheel")
+local options = require("scripts.options")
+
+local function addToggle(key, title, item, ping)
+    local action = wheel.settingsPage:newAction()
+    :setTitle(title)
+    :setToggleTitle(title .. " (on)")
+    :setItem(item)
+    :setToggleItem(item)
+    :onToggle(function (state, _)
+        ping(state)
+    end)
+    options.setAction(key, action)
+end
+
+addToggle("blinking", "blinking", "minecraft:ender_eye", pings.setBlinking)
+addToggle("foxSounds", "fox sounds", "minecraft:sweet_berries", pings.setFoxSounds)
+addToggle("snoring", "snoring", "minecraft:hay_block", pings.setSnoring)
+addToggle("autoSkin", "auto skin", "minecraft:command_block", pings.setAutoSkin)
+addToggle("tailWag", "tail wag", "minecraft:feather", pings.setTailWag)
 
 wheel.settingsPage:newAction()
 :setTitle("disable custom nameplate")
