@@ -43,6 +43,8 @@ animController:setDriver(function (data)
     data.isSprinting = sprinty and not inLiquid
     data.sprintScale = math.lerp(data.sprintScale, data.isSprinting and 1 or 0, 0.6)
 
+    data.headTilt = math.lerp(data.headTilt, math.clamp(-velocity.y * 15, -25, 25), 0.3)
+
     data.velocity = velocity
     data.horizontalSpeed = velocity.xz:length()
     data.forwardSpeed = rotatedVelocity.z
@@ -69,6 +71,7 @@ end,
     groundTime = 0,
     airTime = 0,
     jumpTime = 0,
+    headTilt = 0,
     sprintScale = 0,
     smoothWalkScale = 0,
     smoothForwardScale = 0,
@@ -352,16 +355,26 @@ local fallingAnim = aurianims.step(
     )
 )
 
+local headTiltAnim = aurianims.func(
+    function (data, blend)
+        if data.pose == "FALL_FLYING" or data.pose == "SWIMMING" or data.pose == "SPIN_ATTACK" then return end
+        models.model.root.Head:offsetRot(vec(data.headTilt * blend, 0, 0))
+    end
+)
+
 local mainAnim = aurianims.step(
     function (data)
         return data.wheel
     end,
     nil,
-    aurianims.step(
-        isFalling,
-        fallingAnim,
-        playerAnim
-    )
+    aurianims.stack{
+        aurianims.step(
+            isFalling,
+            fallingAnim,
+            playerAnim
+        ),
+        headTiltAnim,
+    }
 )
 
 animController:setTree(mainAnim)
