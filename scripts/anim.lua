@@ -208,7 +208,7 @@ local armsAnim = aurianims.stack{
     crossbowAnim
 }
 
-local legMovementAnim = aurianims.mix(
+local walkingAnim = aurianims.mix(
     function (data)
         local speed = math.max(0.5, data.walkScale)
         modelAnims.walk:setSpeed(speed * walkAnimSpeedMult)
@@ -234,16 +234,47 @@ local legMovementAnim = aurianims.mix(
     )
 )
 
+-- continue the current walk cycle when jumping so the jump pose lines up with
+-- the leg that was about to be raised
+local walkJumpAnim = aurianims.switch(
+    function (data)
+        return (modelAnims.walk:getTime() % 1) < 0.5 and "up" or "down"
+    end,
+    {
+        up = modelAnims.walkJumpUp,
+        down = modelAnims.walkJumpDown,
+    }
+)
+
+local legMovementAnim = aurianims.step(
+    function (data)
+        return data.jumpTime > 0.01 and data.smoothWalkScale > 0.1 and not data.isSprinting
+    end,
+    walkJumpAnim,
+    walkingAnim
+)
+
 local twoLeggedAnim = aurianims.stack{
     modelAnims.tailIdle,
     armsAnim,
     legMovementAnim
 }
 
-local fourLeggedAnim = aurianims.stack{
-    -- TODO
+local sprintJumpAnim = aurianims.step(
+    function (data)
+        return data.velocity.y > 0
+    end,
+    modelAnims.sprintJumpUp,
+    modelAnims.sprintJumpDown
+)
+
+local fourLeggedAnim = aurianims.step(
+    function (data)
+        return data.jumpTime > 0.01
+    end,
+    sprintJumpAnim,
     modelAnims.sprint
-}
+)
 
 local movementAnim = aurianims.mix(
     function (data)
