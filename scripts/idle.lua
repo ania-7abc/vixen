@@ -34,15 +34,10 @@ local animations = {
             return vec(0, 0, math.sin(t * math.pi * 10 / duration) * 7 * envelope(t, duration))
         end,
     },
-    flinch = {
-        duration = 0.25,
-    },
 }
 local idleNames = { "sniff", "look", "shake" }
 
 local active = nil
-local lastHealth = nil
-local hurtCooldown = 0
 
 function pings.playIdle(name, startTime)
     local entry = animations[name]
@@ -53,9 +48,6 @@ function pings.playIdle(name, startTime)
     elseif name == "shake" then
         ears.kick(vec(-16, 0, 5))
         tail.flick(18)
-    elseif name == "flinch" then
-        ears.tuck()
-        tail.tuck()
     end
 end
 
@@ -65,25 +57,6 @@ options.onChange("idleAnims", function (enabled)
         idleTimer = math.random(idleMinDelay, idleMaxDelay)
     end
 end)
-options.onChange("hurtReactions", function (enabled)
-    if not enabled and active and active.name == "flinch" then active = nil end
-end)
-
-local function tickHurt()
-    local health = player:getHealth()
-    if lastHealth then
-        if options.hurtReactions and health < lastHealth and health > 0 and hurtCooldown <= 0
-            and not sleep.isSleeping() and anim.activePose() == nil then
-            hurtCooldown = 10
-            pings.playIdle("flinch", client:getSystemTime())
-        elseif health > lastHealth then
-            hurtCooldown = 0
-        end
-    end
-    lastHealth = health
-    if hurtCooldown > 0 then hurtCooldown = hurtCooldown - 1 end
-end
-
 local function canPlayIdle()
     if not options.idleAnims then return false end
     if not client:isWindowFocused() or action_wheel:isEnabled() then return false end
@@ -95,14 +68,8 @@ local function canPlayIdle()
     return player:getVelocity():lengthSquared() < 0.01
 end
 
-function events.entity_init()
-    lastHealth = nil
-    hurtCooldown = 0
-end
-
 function events.tick()
     if not player:isLoaded() then return end
-    tickHurt()
 
     if active then
         local elapsed = (client:getSystemTime() - active.start) / 1000
@@ -122,7 +89,7 @@ function events.tick()
 end
 
 function events.render(delta)
-    if not active or not active.entry.rot then return end
+    if not active then return end
     local t = (client:getSystemTime() - active.start) / 1000
     if t < 0 or t > active.entry.duration then return end
     head:offsetRot(active.entry.rot(t, active.entry.duration))

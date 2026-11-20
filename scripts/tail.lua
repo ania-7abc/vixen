@@ -15,7 +15,6 @@ local oldWagTime = 0
 local oldWagStrength = 0
 local newWagTime = 0
 local newWagStrength = 0
-local tuckTicks = 0
 
 -- clamp an angle between min and max
 local function clampAngle(angle, min, max)
@@ -92,10 +91,6 @@ function events.tick()
     local lerpStrength = tailAnimated and 0.5 or 0.1
     newTailRot.x = cosLerpAngle(newTailRot.x, targetRot.x, 90, lerpStrength)
     newTailRot.y = cosLerpAngle(newTailRot.y, targetRot.y, 180, lerpStrength)
-    if tuckTicks > 0 then
-        newTailRot = vec(-35, 0, 0)
-        tuckTicks = tuckTicks - 1
-    end
 
     local speed = math.clamp(playerVel.z, -0.5, 0.5)
 
@@ -127,9 +122,6 @@ end
 local tailModule = {
     flick = function (strength)
         newTailRot.y = newTailRot.y + strength
-    end,
-    tuck = function ()
-        tuckTicks = 5
     end,
 }
 

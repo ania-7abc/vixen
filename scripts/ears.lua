@@ -23,7 +23,6 @@ local damping = 0.8
 local twitchMinDelay = 40
 local twitchMaxDelay = 100
 local twitchTimer = math.random(twitchMinDelay, twitchMaxDelay)
-local tuckTicks = 0
 
 local function twitch()
     local ear = ears[math.random(1, 2)]
@@ -49,18 +48,11 @@ function events.tick()
         if twitchTimer <= 0 then twitch() end
     end
 
-    local tucked = tuckTicks > 0
-    if tucked then tuckTicks = tuckTicks - 1 end
     for _, ear in ipairs(ears) do
         ear.old = ear.rot:copy()
         local earTarget = target + vec(0, ear.side * 2, 0)
-        if tucked then
-            ear.rot = vec(20, ear.side * 2, 0)
-            ear.vel = vec(0, 0, 0)
-        else
-            ear.vel = ear.vel * damping + (earTarget - ear.rot) * stiffness
-            ear.rot = ear.rot + ear.vel
-        end
+        ear.vel = ear.vel * damping + (earTarget - ear.rot) * stiffness
+        ear.rot = ear.rot + ear.vel
     end
 end
 
@@ -74,10 +66,6 @@ function ears.kick(force)
     for _, ear in ipairs(ears) do
         ear.vel:add(force)
     end
-end
-
-function ears.tuck()
-    tuckTicks = 5
 end
 
 return ears
