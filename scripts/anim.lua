@@ -175,43 +175,35 @@ local rightArmAnim = aurianims.switch(
     }
 )
 
+local function usingAction(data, action)
+    return (data.leftActive and data.leftActiveAction == action)
+        or (data.rightActive and data.rightActiveAction == action)
+end
+
+local function isCrossbowReady(item)
+    local tag = item.tag
+    return tag and (tag["Charged"] == 1 or (tag["ChargedProjectiles"] and next(tag["ChargedProjectiles"]) ~= nil)) or false
+end
+
 local bowAnim = aurianims.conditional(
-    function (data)
-        local bowL = data.leftActive and data.leftActiveAction == "BOW"
-        local bowR = data.rightActive and data.rightActiveAction == "BOW"
-        return bowL or bowR
-    end,
+    function (data) return usingAction(data, "BOW") end,
     modelAnims.bow
 )
 
 local crossbowAnim = aurianims.conditional(
     function (data)
-        local loadL = data.leftActive and data.leftActiveAction == "CROSSBOW"
-        local loadR = data.rightActive and data.rightActiveAction == "CROSSBOW"
-        local lTag = data.leftItem.tag
-        local rTag = data.rightItem.tag
-        local crossL = lTag and (lTag["Charged"] == 1 or (lTag["ChargedProjectiles"] and next(lTag["ChargedProjectiles"]) ~= nil)) or false
-        local crossR = rTag and (rTag["Charged"] == 1 or (rTag["ChargedProjectiles"] and next(rTag["ChargedProjectiles"]) ~= nil)) or false
-        return loadL or loadR or crossL or crossR
+        return usingAction(data, "CROSSBOW") or isCrossbowReady(data.leftItem) or isCrossbowReady(data.rightItem)
     end,
     modelAnims.crossbow
 )
 
 local eatingAnim = aurianims.conditional(
-    function (data)
-        local eatL = data.leftActive and data.leftActiveAction == "EAT"
-        local eatR = data.rightActive and data.rightActiveAction == "EAT"
-        return eatL or eatR
-    end,
+    function (data) return usingAction(data, "EAT") end,
     modelAnims.eat
 )
 
 local drinkingAnim = aurianims.conditional(
-    function (data)
-        local drinkL = data.leftActive and data.leftActiveAction == "DRINK"
-        local drinkR = data.rightActive and data.rightActiveAction == "DRINK"
-        return drinkL or drinkR
-    end,
+    function (data) return usingAction(data, "DRINK") end,
     modelAnims.drink
 )
 

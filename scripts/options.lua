@@ -14,6 +14,7 @@ local defaults = {
 local options = {}
 local actions = {}
 local listeners = {}
+local pingSetters = {}
 
 for key, default in pairs(defaults) do
     options[key] = default
@@ -22,9 +23,8 @@ end
 local function notify(key, value)
     local action = actions[key]
     if action then action:setToggled(value) end
-    local keyListeners = listeners[key]
-    if keyListeners then
-        for _, func in ipairs(keyListeners) do func(value) end
+    for _, func in ipairs(listeners[key] or {}) do
+        func(value)
     end
 end
 
@@ -35,43 +35,13 @@ local function set(key, value)
     notify(key, value)
 end
 
-function pings.setBlinking(value)
-    set("blinking", value)
+for key in pairs(defaults) do
+    local pingName = "set" .. key:sub(1, 1):upper() .. key:sub(2)
+    pings[pingName] = function (value)
+        set(key, value)
+    end
+    pingSetters[key] = pings[pingName]
 end
-
-function pings.setFoxSounds(value)
-    set("foxSounds", value)
-end
-
-function pings.setSnoring(value)
-    set("snoring", value)
-end
-
-function pings.setTailWag(value)
-    set("tailWag", value)
-end
-
-function pings.setAllInMouth(value)
-    set("allInMouth", value)
-end
-
-function pings.setEarTwitch(value)
-    set("earTwitch", value)
-end
-
-function pings.setEarPhysics(value)
-    set("earPhysics", value)
-end
-
-local pingSetters = {
-    blinking = pings.setBlinking,
-    foxSounds = pings.setFoxSounds,
-    snoring = pings.setSnoring,
-    tailWag = pings.setTailWag,
-    allInMouth = pings.setAllInMouth,
-    earTwitch = pings.setEarTwitch,
-    earPhysics = pings.setEarPhysics,
-}
 
 function options.setAction(key, action)
     actions[key] = action

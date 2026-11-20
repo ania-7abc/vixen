@@ -42,14 +42,11 @@ local specialUseActions = {
 }
 
 local function isMouthTool(item)
-    if item:isTool() then return true end
-    if item.id:find("_sword") then return true end
-    return contains(toolsExtra, item.id)
+    return item:isTool() or item.id:find("_sword") ~= nil or contains(toolsExtra, item.id)
 end
 
 local function isMouthItem(item)
-    if item:isFood() then return true end
-    return contains(itemsExtra, item.id)
+    return item:isFood() or contains(itemsExtra, item.id)
 end
 
 local function isMouthDrink(item)
@@ -63,23 +60,17 @@ end
 -- with the setting on, a lone item in either hand goes to the mouth while sprinting
 local function singleMouthOffhand(sprinting)
     if not options.allInMouth or not sprinting then return nil end
-    local mainItem = player:getHeldItem()
-    local offItem = player:getHeldItem(true)
-    local main = hasItem(mainItem)
-    local off = hasItem(offItem)
+    local mainItem, offItem = player:getHeldItem(), player:getHeldItem(true)
+    local main, off = hasItem(mainItem), hasItem(offItem)
     if main and not off and not specialUseActions[mainItem:getUseAction()] then return false end
     if off and not main and not specialUseActions[offItem:getUseAction()] then return true end
-    return nil
 end
 
 local function mouthActions(item, sprinting, force)
     local drink = isMouthDrink(item)
     if force then
-        return {
-            drink = drink,
-            item = not drink and not isMouthTool(item),
-            tool = not drink and isMouthTool(item),
-        }
+        local tool = not drink and isMouthTool(item)
+        return { drink = drink, item = not drink and not tool, tool = tool }
     end
     return {
         drink = drink,
@@ -119,10 +110,8 @@ function events.render()
 
     local mainBusy = isHandBusy(mainHandItem, sprinting, false)
     local offBusy = isHandBusy(offHandItem, sprinting, true)
-    local rightBusy = leftHanded and offBusy or mainBusy
-    local leftBusy = leftHanded and mainBusy or offBusy
-    setParentIfChanged(rightIP, rightBusy and "None" or "RightItemPivot")
-    setParentIfChanged(leftIP, leftBusy and "None" or "LeftItemPivot")
+    setParentIfChanged(rightIP, (leftHanded and offBusy or mainBusy) and "None" or "RightItemPivot")
+    setParentIfChanged(leftIP, (leftHanded and mainBusy or offBusy) and "None" or "LeftItemPivot")
 
     -- prefer the main hand, then the off hand; drinks win over food and tools
     local function mouthPivot(action)
@@ -130,6 +119,7 @@ function events.render()
         if offMouth[action] then return offHandPivot end
         return "None"
     end
+
     local drinkParent = mouthPivot("drink")
     local itemParent = drinkParent == "None" and mouthPivot("item") or "None"
     local toolParent = drinkParent == "None" and itemParent == "None" and mouthPivot("tool") or "None"

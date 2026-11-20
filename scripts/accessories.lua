@@ -64,8 +64,8 @@ end
 function accessories.set(key, value)
     if state[key] == nil or state[key] == value then return end
     -- pings only reach other clients, so always apply locally as well
-    pings.setAccessory(key, value)
     apply(key, value)
+    pings.setAccessory(key, value)
     if host:isHost() then config:save(key, value) end
 end
 

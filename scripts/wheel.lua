@@ -58,10 +58,17 @@ addPageLink("Settings", "minecraft:totem_of_undying", settingsPage)
 -- poses: the sleep pose also plays the fox sleep call
 local poseActions = {}
 local wagAction
-poseActions.wSleep = posePage:newAction()
-:setTitle("Sleep")
-:setItem("minecraft:red_bed")
-:onLeftClick(function (_)
+
+local function addPose(name, title, item, onClick)
+    local action = posePage:newAction():setTitle(title):setItem(item)
+    action:onLeftClick(onClick or function (_)
+        if anim.activePose() == name then anim.stop() else anim.pose(name) end
+    end)
+    poseActions[name] = action
+    return action
+end
+
+addPose("wSleep", "Sleep", "minecraft:red_bed", function (_)
     if anim.activePose() == "wSleep" then
         anim.stop()
     else
@@ -71,32 +78,10 @@ poseActions.wSleep = posePage:newAction()
         sounds.play("sleep")
     end
 end)
-poseActions.wSit = posePage:newAction()
-:setTitle("Sit (tucked)")
-:setItem("minecraft:spruce_stairs")
-:onLeftClick(function (_)
-    if anim.activePose() == "wSit" then anim.stop() else anim.pose("wSit") end
-end)
-poseActions.wSitAlt = posePage:newAction()
-:setTitle("Sit (legs out)")
-:setItem("minecraft:oak_stairs")
-:onLeftClick(function (_)
-    if anim.activePose() == "wSitAlt" then anim.stop() else anim.pose("wSitAlt") end
-end)
-
-local extraPoses = {
-    { name = "wCurious", title = "Curious tilt", item = "minecraft:compass" },
-    { name = "wCurl", title = "Curl up", item = "minecraft:hay_block" },
-}
-for _, pose in ipairs(extraPoses) do
-    local name = pose.name
-    poseActions[name] = posePage:newAction()
-    :setTitle(pose.title)
-    :setItem(pose.item)
-    :onLeftClick(function (_)
-        if anim.activePose() == name then anim.stop() else anim.pose(name) end
-    end)
-end
+addPose("wSit", "Sit (tucked)", "minecraft:spruce_stairs")
+addPose("wSitAlt", "Sit (legs out)", "minecraft:oak_stairs")
+addPose("wCurious", "Curious tilt", "minecraft:compass")
+addPose("wCurl", "Curl up", "minecraft:hay_block")
 
 -- highlight the currently playing pose and selected skin
 local skinActions = {}

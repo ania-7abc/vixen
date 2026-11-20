@@ -36,29 +36,22 @@ local skinEntries = {
     },
 }
 local skinOrder = { "Rebecca", "Rue", "Kaya", "Thea", "Eva", "Mira" }
--- generate keys
-for key, value in pairs(skinEntries) do
-    value["key"] = key
-end
-
-local function validateSkinEntries()
-    for key, skin in pairs(skinEntries) do
-        if not skin.icon or not skin.title then
-            log("[vixen] skin " .. key .. " is missing its icon or title")
+for key, skin in pairs(skinEntries) do
+    skin.key = key
+    if not skin.icon or not skin.title then
+        log("[vixen] skin " .. key .. " is missing its icon or title")
+    end
+    if not skin.texture then
+        log("[vixen] skin " .. key .. " is missing its texture")
+    elseif not textures[skin.texture] or not textures[skin.texture .. "_sleep"] then
+        if not textures[skin.texture] then
+            log("[vixen] skin " .. key .. " is missing texture " .. skin.texture)
         end
-        if not skin.texture then
-            log("[vixen] skin " .. key .. " is missing its texture")
-        else
-            if not textures[skin.texture] then
-                log("[vixen] skin " .. key .. " is missing texture " .. skin.texture)
-            end
-            if not textures[skin.texture .. "_sleep"] then
-                log("[vixen] skin " .. key .. " is missing sleeping texture " .. skin.texture .. "_sleep")
-            end
+        if not textures[skin.texture .. "_sleep"] then
+            log("[vixen] skin " .. key .. " is missing sleeping texture " .. skin.texture .. "_sleep")
         end
     end
 end
-validateSkinEntries()
 
 local currentSkin = skinEntries.Rebecca
 
@@ -164,12 +157,10 @@ local function updateAutoSkin()
 end
 
 function events.entity_init()
-    -- load config
-    if host:isHost() then
-        autoSkinEnabled = safeConfigLoad("autoSkin", config:load("autoSkinEnabled") or false)
-        pings.setAutoSkin(autoSkinEnabled)
-        pings.setSkin(safeConfigLoad("currentSkin", currentSkin.key))
-    end
+    if not host:isHost() then return end
+    autoSkinEnabled = safeConfigLoad("autoSkin", config:load("autoSkinEnabled") or false)
+    pings.setAutoSkin(autoSkinEnabled)
+    pings.setSkin(safeConfigLoad("currentSkin", currentSkin.key))
 end
 
 function events.tick()

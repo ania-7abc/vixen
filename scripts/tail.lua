@@ -19,12 +19,7 @@ local newWagStrength = 0
 -- clamp an angle between min and max
 local function clampAngle(angle, min, max)
     angle = math.shortAngle(0, angle)
-    if angle < min then
-        return min
-    elseif angle > max then
-        return max
-    end
-    return angle
+    return math.max(min, math.min(max, angle))
 end
 
 -- lerp an angle depending on the cosine of how close it is to the target, minimum delta can be specified
