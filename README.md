@@ -14,8 +14,8 @@ Watch the trailer [here](https://www.youtube.com/watch?v=imlNdjn5elc)!
 ## Installation
 
 - Download and install [Figura](https://modrinth.com/mod/figura)
-- Download the avatar (big green `<> Code` button > Download ZIP, or [here](https://github.com/ania-7abc/vixen/archive/refs/heads/master.zip))
-- Unzip the contents of the file and put the `vixen-master` folder into the `.minecraft/figura/avatars/` folder
+- Download the avatar (big green `<> Code` button > Download ZIP, or [here](https://github.com/ania-7abc/vixen/archive/refs/heads/main.zip))
+- Unzip the contents of the file and put the `vixen-main` folder into the `.minecraft/figura/avatars/` folder
 - You can select the avatar by clicking the Figura icon in the pause menu, then selecting Vixen 
 
 ## Recommend extras
