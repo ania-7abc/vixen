@@ -45,7 +45,7 @@ Shaders:
 
 - Tail physics (real)!
 - Custom animations! Too many to list. Watch the trailers!
-  - Extra poses can be played from the `Poses` page; moving stops the pose. `Sleep` also plays the fox sleep call.
+  - Extra poses can be played from the `Poses` page; moving stops the pose. `Sleep` also plays the fox sleep call. Poses include sitting, lying down, play bow, stretch, curious tilt, on back and curl up.
   - Closed eyes during sleep.
 - Hold certain items in the mouth. Tools will also be held in the mouth while sprinting. The `All in mouth` setting makes a single held item go to the mouth while sprinting; with two held items or items with hand animations (shields, bows, crossbows, tridents, spyglasses, etc.) the usual rules apply. You can modify which items and tools are held in the mouth in `scripts/items.lua`.
 - Wag the tail and ears from the action wheel (`Poses` page). Toggle it off to let the motion finish :3c

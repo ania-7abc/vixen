@@ -81,6 +81,23 @@ poseActions.wSitAlt = posePage:newAction()
     if anim.activePose() == "wSitAlt" then anim.stop() else anim.pose("wSitAlt") end
 end)
 
+local extraPoses = {
+    { name = "wBow", title = "Play bow", item = "minecraft:bone" },
+    { name = "wStretch", title = "Stretch", item = "minecraft:rabbit_foot" },
+    { name = "wCurious", title = "Curious tilt", item = "minecraft:compass" },
+    { name = "wBack", title = "On back", item = "minecraft:light_gray_bed" },
+    { name = "wCurl", title = "Curl up", item = "minecraft:hay_block" },
+}
+for _, pose in ipairs(extraPoses) do
+    local name = pose.name
+    poseActions[name] = posePage:newAction()
+    :setTitle(pose.title)
+    :setItem(pose.item)
+    :onLeftClick(function (_)
+        if anim.activePose() == name then anim.stop() else anim.pose(name) end
+    end)
+end
+
 -- highlight the currently playing pose and selected skin
 local skinActions = {}
 local autoSkinAction
