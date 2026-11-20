@@ -34,15 +34,6 @@ local soundPage = action_wheel:newPage("Sounds")
 local settingsPage = action_wheel:newPage("Settings")
 action_wheel:setPage(mainPage)
 
-local function addBackAction(page)
-    page:newAction()
-    :setTitle("Back")
-    :setItem("minecraft:arrow")
-    :onLeftClick(function (_)
-        back()
-    end)
-end
-
 local function addPageLink(title, item, page)
     mainPage:newAction()
     :setTitle(title)
@@ -60,7 +51,6 @@ addPageLink("Settings", "minecraft:totem_of_undying", settingsPage)
 
 -- poses: the sleep pose also plays the fox sleep call
 local poseActions = {}
-addBackAction(posePage)
 poseActions.wSleep = posePage:newAction()
 :setTitle("Sleep")
 :setItem("minecraft:red_bed")
@@ -102,7 +92,6 @@ posePage:newAction()
 end)
 
 -- skins
-addBackAction(skinPage)
 for _, key in ipairs(skins.order) do
     local entry = skins.entries[key]
     skinPage:newAction()
@@ -121,7 +110,6 @@ end)
 
 -- sounds
 local soundOrder = { "chirp", "bite", "eat", "growl", "screech", "sniff", "spit" }
-addBackAction(soundPage)
 for _, key in ipairs(soundOrder) do
     local entry = sounds.entries[key]
     soundPage:newAction()
@@ -145,7 +133,6 @@ local function addToggle(key, title, item, toggleItem, ping)
     options.setAction(key, action)
 end
 
-addBackAction(settingsPage)
 addToggle("blinking", "Blinking", "minecraft:ender_eye", "minecraft:ender_pearl", pings.setBlinking)
 addToggle("foxSounds", "Fox SFX", "minecraft:sweet_berries", "minecraft:note_block", pings.setFoxSounds)
 addToggle("snoring", "Snoring", "minecraft:hay_block", "minecraft:red_bed", pings.setSnoring)
