@@ -147,6 +147,7 @@ addToggle("snoring", "Snoring", "minecraft:hay_block", "minecraft:red_bed", ping
 addToggle("tailWag", "Auto tail sway", "minecraft:feather", "minecraft:sugar", pings.setTailWag)
 addToggle("allInMouth", "All in mouth", "minecraft:chest", "minecraft:cooked_chicken", pings.setAllInMouth)
 addToggle("earTwitch", "Ear twitch", "minecraft:rabbit_foot", "minecraft:rabbit_hide", pings.setEarTwitch)
+addToggle("zParticles", "Z particles", "minecraft:paper", "minecraft:blue_ice", pings.setZParticles)
 
 return {
     mainPage = mainPage,

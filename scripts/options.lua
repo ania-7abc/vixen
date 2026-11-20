@@ -8,6 +8,7 @@ local defaults = {
     tailWag = true,
     allInMouth = false,
     earTwitch = true,
+    zParticles = true,
 }
 
 local options = {}
@@ -58,6 +59,10 @@ function pings.setEarTwitch(value)
     set("earTwitch", value)
 end
 
+function pings.setZParticles(value)
+    set("zParticles", value)
+end
+
 local pingSetters = {
     blinking = pings.setBlinking,
     foxSounds = pings.setFoxSounds,
@@ -65,6 +70,7 @@ local pingSetters = {
     tailWag = pings.setTailWag,
     allInMouth = pings.setAllInMouth,
     earTwitch = pings.setEarTwitch,
+    zParticles = pings.setZParticles,
 }
 
 function options.setAction(key, action)
