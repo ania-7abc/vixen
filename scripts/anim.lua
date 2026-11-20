@@ -18,6 +18,7 @@ animController:setDriver(function (data)
     local inLiquid = #world.getBlockState(player:getPos()):getFluidTags() >= 1
     local vehicle = player:getVehicle()
     local isCrouching = player:isCrouching()
+    data.isCrouching = isCrouching
 
     -- hands
     local handedness = player:isLeftHanded()
@@ -54,6 +55,7 @@ animController:setDriver(function (data)
     data.oldOnGround = data.onGround
     data.isOnGround = player:isOnGround()
     data.groundTime = data.isOnGround and data.groundTime + 1 or 0
+    data.airTime = data.isOnGround and 0 or data.airTime + 1
 
     data.jumpTime = data.jumpTime * 0.85
     if not data.onGround and data.oldOnGround and velocity.y > 0.1 then
@@ -65,6 +67,7 @@ end,
 {
     wheel = false,
     groundTime = 0,
+    airTime = 0,
     jumpTime = 0,
     sprintScale = 0,
     smoothWalkScale = 0,
@@ -297,12 +300,37 @@ local playerAnim = aurianims.step(
     )
 )
 
+-- the fall pose replaces the pose selected by playerAnim, so it can only be
+-- started once per fall instead of being restarted from several branches
+local function isFalling(data)
+    if data.pose ~= "STANDING" and data.pose ~= "CROUCHING" then return false end
+    return not data.isOnGround and data.velocity.y < -0.1 and data.jumpTime <= 0.01 and data.airTime > 1
+end
+
+local fallingAnim = aurianims.step(
+    function (data)
+        return data.isCrouching
+    end,
+    modelAnims.crouchFall2,
+    aurianims.step(
+        function (data)
+            return data.isSprinting
+        end,
+        modelAnims.sprintJumpDown,
+        modelAnims.walkJumpDown
+    )
+)
+
 local mainAnim = aurianims.step(
     function (data)
         return data.wheel
     end,
     nil,
-    playerAnim
+    aurianims.step(
+        isFalling,
+        fallingAnim,
+        playerAnim
+    )
 )
 
 animController:setTree(mainAnim)
