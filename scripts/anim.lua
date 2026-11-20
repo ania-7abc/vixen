@@ -103,12 +103,15 @@ animController:setDriver(function (data)
 
     -- fade wheel poses in and out instead of snapping into them
     data.wheelBlend = math.lerp(data.wheelBlend, data.wheel and 1 or 0, 0.2)
+    data.poseSwapBlend = math.lerp(data.poseSwapBlend, 1, 0.2)
     if not data.wheel and data.wheelBlend < 0.01 then data.wheelPose = nil end
 end,
 {
     wheel = false,
     wheelBlend = 0,
     wheelPose = nil,
+    prevPose = nil,
+    poseSwapBlend = 1,
     isOnGround = false,
     airTime = 0,
     groundTime = 0,
@@ -394,15 +397,19 @@ local headTiltAnim = aurianims.func(
     end
 )
 
-local wheelPoseAnim = aurianims.switch(
+local wheelAnims = {
+    wSleep = modelAnims.wSleep,
+    wSit = modelAnims.wSit,
+    wSitAlt = modelAnims.wSitAlt,
+}
+
+-- cross-fade between two active poses without dropping back to the standing pose
+local wheelPoseAnim = aurianims.mix(
     function (data)
-        return data.wheelPose
+        return data.poseSwapBlend
     end,
-    {
-        wSleep = modelAnims.wSleep,
-        wSit = modelAnims.wSit,
-        wSitAlt = modelAnims.wSitAlt,
-    }
+    aurianims.switch(function (data) return data.prevPose end, wheelAnims),
+    aurianims.switch(function (data) return data.wheelPose end, wheelAnims)
 )
 
 local mainAnim = aurianims.mix(
@@ -438,8 +445,11 @@ function pings.stopWheelAnim()
 end
 function pings.playWheelAnim(animName)
     wheelAnimPos = player:getPos()
-    -- fade through the current pose when switching to another one
-    if wheelAnimName ~= animName then animController.data.wheelBlend = 0 end
+    -- cross-fade between poses instead of dropping back to the standing pose
+    if wheelAnimName and wheelAnimName ~= animName then
+        animController.data.prevPose = wheelAnimName
+        animController.data.poseSwapBlend = 0
+    end
     wheelAnimName = animName
     animController.data.wheelPose = animName
     animController.data.wheel = true
