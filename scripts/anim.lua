@@ -244,7 +244,9 @@ local twoLeggedAnim = aurianims.stack{
 
 local sprintJumpAnim = aurianims.step(
     function (data)
-        return data.velocity.y > 0
+        -- velocity.y hovers around zero while running on ground, so checking it
+        -- alone swaps the static jump pose with the running animation every frame
+        return not data.isOnGround and data.velocity.y > 0
     end,
     modelAnims.sprintJumpUp,
     modelAnims.sprintJumpDown
