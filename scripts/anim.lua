@@ -74,6 +74,14 @@ animController:setDriver(function (data)
     elseif data.isOnGround then
         data.jumpTime = math.lerp(data.jumpTime, 0, 0.6)
     end
+
+    -- cross-fade to the takeoff pose instead of snapping into it, and back to
+    -- the running cycle once the jump cooldown is over
+    if data.jumpTime > 0.01 then
+        data.takeoffBlend = math.min(1, data.takeoffBlend + 0.34)
+    else
+        data.takeoffBlend = math.max(0, data.takeoffBlend - 0.34)
+    end
 end,
 {
     wheel = false,
@@ -81,6 +89,7 @@ end,
     airTime = 0,
     groundTime = 0,
     jumpTime = 0,
+    takeoffBlend = 0,
     headTilt = 0,
     sprintScale = 0,
     smoothWalkScale = 0,
@@ -245,17 +254,19 @@ local twoLeggedAnim = aurianims.stack{
     legMovementAnim
 }
 
--- upstream holds the first sprint frame while jumping and briefly after landing.
--- jumpTime only decays, so this switches once per jump instead of flickering;
--- sprintJumpUp is that exact first frame, so returning to sprint stays seamless.
+-- push off into the held jump pose, then cross-fade back into the running cycle.
+-- the takeoff animation ends on sprint's first frame, so the return stays seamless.
+local sprintTakeoffBlend = aurianims.mix(
+    function (data)
+        local t = math.clamp(data.takeoffBlend, 0, 1)
+        return t * t * (3 - 2 * t), false
+    end,
+    modelAnims.sprint,
+    modelAnims.sprintTakeoff
+)
+
 local fourLeggedAnim = aurianims.stack{
-    aurianims.step(
-        function (data)
-            return data.jumpTime > 0.01
-        end,
-        modelAnims.sprintJumpUp,
-        modelAnims.sprint
-    )
+    sprintTakeoffBlend
 }
 
 local movementAnim = aurianims.mix(
