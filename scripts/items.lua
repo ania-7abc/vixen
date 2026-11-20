@@ -1,5 +1,7 @@
 require("scripts.util")
 
+local options = require("scripts.options")
+
 local itemsExtra = {
     "minecraft:emerald",
     "minecraft:feather",
@@ -43,8 +45,29 @@ local function isMouthDrink(item)
     return contains(drinkExtra, item.id)
 end
 
-local function mouthActions(item, sprinting)
+local function hasItem(item)
+    return item and item.id ~= "minecraft:air"
+end
+
+-- with the setting on, a lone item in either hand goes to the mouth while sprinting
+local function singleMouthOffhand(sprinting)
+    if not options.allInMouth or not sprinting then return nil end
+    local main = hasItem(player:getHeldItem())
+    local off = hasItem(player:getHeldItem(true))
+    if main and not off then return false end
+    if off and not main then return true end
+    return nil
+end
+
+local function mouthActions(item, sprinting, force)
     local drink = isMouthDrink(item)
+    if force then
+        return {
+            drink = drink,
+            item = not drink and not isMouthTool(item),
+            tool = not drink and isMouthTool(item),
+        }
+    end
     return {
         drink = drink,
         item = isMouthItem(item) and not drink,
@@ -64,7 +87,8 @@ local function setParentIfChanged(part, parent)
     end
 end
 
-local function isHandBusy(heldItem, sprinting)
+local function isHandBusy(heldItem, sprinting, offhand)
+    if offhand ~= nil and singleMouthOffhand(sprinting) == offhand then return true end
     return isMouthItem(heldItem) or isMouthDrink(heldItem) or (isMouthTool(heldItem) and sprinting)
 end
 
@@ -72,17 +96,20 @@ function events.render()
     local leftHanded = player:isLeftHanded()
     local mainHandItem = player:getHeldItem()
     local offHandItem = player:getHeldItem(true)
-    local rightHandItem = leftHanded and offHandItem or mainHandItem
-    local leftHandItem = leftHanded and mainHandItem or offHandItem
 
     local sprinting = player:isSprinting()
-    local mainMouth = mouthActions(mainHandItem, sprinting)
-    local offMouth = mouthActions(offHandItem, sprinting)
+    local single = singleMouthOffhand(sprinting)
+    local mainMouth = mouthActions(mainHandItem, sprinting, single == false)
+    local offMouth = mouthActions(offHandItem, sprinting, single == true)
     local mainHandPivot = leftHanded and "LeftItemPivot" or "RightItemPivot"
     local offHandPivot = leftHanded and "RightItemPivot" or "LeftItemPivot"
 
-    setParentIfChanged(rightIP, isHandBusy(rightHandItem, sprinting) and "None" or "RightItemPivot")
-    setParentIfChanged(leftIP, isHandBusy(leftHandItem, sprinting) and "None" or "LeftItemPivot")
+    local mainBusy = isHandBusy(mainHandItem, sprinting, false)
+    local offBusy = isHandBusy(offHandItem, sprinting, true)
+    local rightBusy = leftHanded and offBusy or mainBusy
+    local leftBusy = leftHanded and mainBusy or offBusy
+    setParentIfChanged(rightIP, rightBusy and "None" or "RightItemPivot")
+    setParentIfChanged(leftIP, leftBusy and "None" or "LeftItemPivot")
 
     -- prefer the main hand, then the off hand; drinks win over food and tools
     local function mouthPivot(action)

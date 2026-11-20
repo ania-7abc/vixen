@@ -132,8 +132,9 @@ local vanillaHandsAnim = aurianims.stack{
         models.model.root.RightArm
     }, function (name, rot)
         local handedness = player:isLeftHanded()
-        local heldItem = name == "RIGHT_ARM" and player:getHeldItem(handedness) or player:getHeldItem(not handedness)
-        if not items.isHandBusy(heldItem, player:isSprinting()) then return end
+        local offhand = name == "RIGHT_ARM" and handedness or not handedness
+        local heldItem = player:getHeldItem(offhand)
+        if not items.isHandBusy(heldItem, player:isSprinting(), offhand) then return end
 
         -- vanilla halves the walk swing and tilts the arm down 18 degrees for held items.
         -- undo the pose, but take the missing half of the swing from the matching leg:

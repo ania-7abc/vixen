@@ -6,6 +6,7 @@ local defaults = {
     foxSounds = true,
     snoring = true,
     tailWag = true,
+    allInMouth = false,
 }
 
 local options = {}
@@ -48,11 +49,16 @@ function pings.setTailWag(value)
     set("tailWag", value)
 end
 
+function pings.setAllInMouth(value)
+    set("allInMouth", value)
+end
+
 local pingSetters = {
     blinking = pings.setBlinking,
     foxSounds = pings.setFoxSounds,
     snoring = pings.setSnoring,
     tailWag = pings.setTailWag,
+    allInMouth = pings.setAllInMouth,
 }
 
 function options.setAction(key, action)
