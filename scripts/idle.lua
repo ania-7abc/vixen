@@ -35,11 +35,7 @@ local animations = {
         end,
     },
     flinch = {
-        duration = 0.6,
-        rot = function (t, duration)
-            local e = envelope(t, duration)
-            return vec(14 * e, 0, -5 * e)
-        end,
+        duration = 0.25,
     },
 }
 local idleNames = { "sniff", "look", "shake" }
@@ -58,8 +54,8 @@ function pings.playIdle(name, startTime)
         ears.kick(vec(-16, 0, 5))
         tail.flick(18)
     elseif name == "flinch" then
-        ears.kick(vec(22, 0, 0))
-        tail.flick(-14)
+        ears.tuck()
+        tail.tuck()
     end
 end
 
@@ -126,7 +122,7 @@ function events.tick()
 end
 
 function events.render(delta)
-    if not active then return end
+    if not active or not active.entry.rot then return end
     local t = (client:getSystemTime() - active.start) / 1000
     if t < 0 or t > active.entry.duration then return end
     head:offsetRot(active.entry.rot(t, active.entry.duration))
