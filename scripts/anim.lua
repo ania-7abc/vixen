@@ -69,12 +69,8 @@ animController:setDriver(function (data)
     data.jumpTime = data.jumpTime * 0.85
     if not data.isOnGround and data.oldOnGround and velocity.y > 0.1 then
         data.jumpTime = math.min(velocity.y * 8, 2)
-        data.jumpUp = true
     elseif data.isOnGround then
         data.jumpTime = math.lerp(data.jumpTime, 0, 0.6)
-        data.jumpUp = false
-    elseif data.jumpUp and velocity.y <= 0 then
-        data.jumpUp = false
     end
 end,
 {
@@ -82,7 +78,6 @@ end,
     isOnGround = false,
     airTime = 0,
     jumpTime = 0,
-    jumpUp = false,
     headTilt = 0,
     sprintScale = 0,
     smoothWalkScale = 0,
@@ -247,23 +242,12 @@ local twoLeggedAnim = aurianims.stack{
     legMovementAnim
 }
 
-local sprintJumpAnim = aurianims.step(
-    function (data)
-        -- velocity.y hovers around zero near the jump apex and landing, so use a
-        -- latch that switches to the falling pose only once per jump
-        return data.jumpUp
-    end,
-    modelAnims.sprintJumpUp,
-    modelAnims.sprintJumpDown
-)
-
-local fourLeggedAnim = aurianims.step(
-    function (data)
-        return data.jumpTime > 0.01
-    end,
-    sprintJumpAnim,
+-- sprintJumpUp/Down are the same cycle as sprint, with jumpUp holding its first
+-- frame. Switching between them restarts the animation every time the predicate
+-- flickers, which looks like trembling, so just keep the cycle running.
+local fourLeggedAnim = aurianims.stack{
     modelAnims.sprint
-)
+}
 
 local movementAnim = aurianims.mix(
     function (data)
