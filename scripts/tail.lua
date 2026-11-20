@@ -1,5 +1,7 @@
 -- inspired by Auriafoxgirl
 
+local options = require("scripts.options")
+
 local tail = models.model.root.Tail.Actual
 local tailTarget = models.model.root.Tail.Target
 
@@ -57,6 +59,7 @@ function events.tick()
         waterStrength = 0.5
         wagWalkSpeed = 0.5
     end
+    if not options.tailWag then wagWalkSpeed = 0 end
     local playerVelRaw = vectors.rotateAroundAxis(bodyPitch, playerVel, vec(1, 0, 0))
 
     -- calculate body rotation difference
@@ -105,7 +108,7 @@ function events.tick()
     end
 
     -- calculate wag strength
-    if tailWagged then wagWalkSpeed = 0.1 end -- wag less while its animated
+    if tailWagged then wagWalkSpeed = options.tailWag and 0.1 or 0 end -- wag less while its animated
     oldWagStrength = newWagStrength
     newWagStrength = math.lerp(newWagStrength, speed * waterStrength * wagWalkSpeed, 0.1)
 
