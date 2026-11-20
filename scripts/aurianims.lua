@@ -134,10 +134,23 @@ function lib.vanilla(parts, adjust)
    }
 end
 
+-- setPlaying(false) stops an animation and rewinds it, which makes a cycle jump
+-- back to its first frame whenever it fades out. pausing keeps the phase so a
+-- cross-fade can pick the cycle up where it left off.
+local playingAnims = setmetatable({}, { __mode = 'k' })
+
 local nodesUpdate
 local function update(controller, node, blend)
    if type(node) == 'Animation' then
-      node:setPlaying(blend > 0.001)
+      if blend > 0.001 then
+         if not playingAnims[node] then
+            node:play()
+            playingAnims[node] = true
+         end
+      elseif playingAnims[node] then
+         node:pause()
+         playingAnims[node] = false
+      end
       return
    elseif node == nil then
       return

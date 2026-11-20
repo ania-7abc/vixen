@@ -13,6 +13,11 @@ local sprintAnimSpeedMult = 0.8
 local walkAnimSpeedMult = 0.9
 local walkBackAnimSpeedMult = 1.4
 
+local function isFalling(data)
+    if data.pose ~= "STANDING" then return false end
+    return not data.isOnGround and data.velocity.y < -0.1 and data.jumpTime <= 0.01 and data.airTime > 1
+end
+
 animController:setDriver(function (data)
     local velocity = player:getVelocity()
     local bodyRot = player:getBodyYaw(1)
@@ -82,6 +87,20 @@ animController:setDriver(function (data)
     else
         data.takeoffBlend = math.max(0, data.takeoffBlend - 0.34)
     end
+
+    -- walking jumps and falls fade in/out instead of switching poses in one tick
+    local falling = isFalling(data)
+    local walkJumping = falling or (data.jumpTime > 0.01 and data.smoothWalkScale > 0.1 and not data.isSprinting)
+    if walkJumping and not data.wasWalkJumping then
+        -- latch the leg that was about to step, before the walk cycle stops
+        data.jumpPhase = (modelAnims.walk:getTime() % 1) < 0.5 and 0 or 1
+        data.jumpDownBlend = data.jumpPhase
+    end
+    data.wasWalkJumping = walkJumping
+    data.walkJumpBlend = math.lerp(data.walkJumpBlend, walkJumping and 1 or 0, 0.5)
+    data.jumpDownBlend = math.lerp(data.jumpDownBlend, (falling or data.jumpPhase == 1) and 1 or 0, 0.5)
+
+    data.crouchAirBlend = math.lerp(data.crouchAirBlend, data.isOnGround and 0 or 1, 0.5)
 end,
 {
     wheel = false,
@@ -90,6 +109,11 @@ end,
     groundTime = 0,
     jumpTime = 0,
     takeoffBlend = 0,
+    walkJumpBlend = 0,
+    jumpDownBlend = 0,
+    jumpPhase = 0,
+    wasWalkJumping = false,
+    crouchAirBlend = 0,
     headTilt = 0,
     sprintScale = 0,
     smoothWalkScale = 0,
@@ -228,24 +252,23 @@ local walkingAnim = aurianims.mix(
     )
 )
 
--- continue the current walk cycle when jumping so the jump pose lines up with
--- the leg that was about to be raised
-local walkJumpAnim = aurianims.switch(
+-- the walk cycle is latched when the jump starts, so the jump pose lines up with
+-- the leg that was about to be raised; blend between the two held poses so
+-- changing legs mid-fall doesn't snap either
+local walkJumpAnim = aurianims.mix(
     function (data)
-        return (modelAnims.walk:getTime() % 1) < 0.5 and "up" or "down"
+        return data.jumpDownBlend
     end,
-    {
-        up = modelAnims.walkJumpUp,
-        down = modelAnims.walkJumpDown,
-    }
+    modelAnims.walkJumpUp,
+    modelAnims.walkJumpDown
 )
 
-local legMovementAnim = aurianims.step(
+local legMovementAnim = aurianims.mix(
     function (data)
-        return data.jumpTime > 0.01 and data.smoothWalkScale > 0.1 and not data.isSprinting
+        return data.walkJumpBlend
     end,
-    walkJumpAnim,
-    walkingAnim
+    walkingAnim,
+    walkJumpAnim
 )
 
 local twoLeggedAnim = aurianims.stack{
@@ -287,12 +310,12 @@ local crouchWalkAnim = aurianims.mix(
     modelAnims.crouchWalk
 )
 
-local crouchAnim = aurianims.step(
+local crouchAnim = aurianims.mix(
     function (data)
-        return not data.isOnGround
+        return data.crouchAirBlend
     end,
-    modelAnims.crouchFall2,
-    crouchWalkAnim
+    crouchWalkAnim,
+    modelAnims.crouchFall2
 )
 
 local bendKneesToVanilla = aurianims.func(
@@ -359,22 +382,6 @@ local playerAnim = aurianims.step(
     )
 )
 
--- the fall pose replaces the pose selected by playerAnim, so it can only be
--- started once per fall instead of being restarted from several branches
--- crouching has its own airborne pose in crouchAnim
-local function isFalling(data)
-    if data.pose ~= "STANDING" then return false end
-    return not data.isOnGround and data.velocity.y < -0.1 and data.jumpTime <= 0.01 and data.airTime > 1
-end
-
-local fallingAnim = aurianims.step(
-    function (data)
-        return data.isSprinting
-    end,
-    modelAnims.sprintJumpDown,
-    modelAnims.walkJumpDown
-)
-
 local headTiltAnim = aurianims.func(
     function (data, blend)
         if data.pose == "FALL_FLYING" or data.pose == "SWIMMING" or data.pose == "SPIN_ATTACK" or data.pose == "CLIMBING" then return end
@@ -388,11 +395,7 @@ local mainAnim = aurianims.step(
     end,
     nil,
     aurianims.stack{
-        aurianims.step(
-            isFalling,
-            fallingAnim,
-            playerAnim
-        ),
+        playerAnim,
         headTiltAnim,
     }
 )
