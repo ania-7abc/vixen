@@ -452,6 +452,17 @@ function pings.playWheelAnim(animName)
     wheelAnim:play()
 end
 
+function pings.setWag(enabled)
+    if enabled then
+        sounds:playSound("minecraft:entity.fox.ambient", player:getPos())
+        animations.model.tailWag:loop("LOOP")
+        forceStartAnim(animations.model.wag)
+        animations.model.tailWag:play()
+    else
+        animations.model.tailWag:loop("ONCE")
+    end
+end
+
 wheel.animPage:newAction()
 :setTitle("sleep")
 :setItem("minecraft:red_bed")
@@ -474,4 +485,13 @@ wheel.animPage:newAction()
 :onLeftClick(function (_)
     pings.setWheelSleeping(false)
     pings.playWheelAnim("wSitAlt")
+end)
+
+wheel.animPage:newAction()
+:setTitle("wag")
+:setToggleTitle("wagging")
+:setItem("minecraft:feather")
+:setToggleItem("minecraft:sugar")
+:onToggle(function (state, _)
+    pings.setWag(state)
 end)

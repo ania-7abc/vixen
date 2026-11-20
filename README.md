@@ -48,7 +48,7 @@ Shaders:
   - There are some extra animations you can play manually from the action wheel, moving stops the animation.
   - Closed eyes during sleep.
 - Hold certain items in the mouth. Tools will also be held in the mouth while sprinting. You can modify which items and tools are held in the mouth in `scripts/items.lua`.
-- Hold `H` to wag the tail. Also moves the ears a little :3c
+- Wag the tail and ears from the action wheel (animations page). Toggle it off to let the motion finish :3c
 - 6 different skins. Can be changed manually from the action wheel.
 
 ![skins](./misc/skins.png)
