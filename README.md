@@ -41,15 +41,15 @@ Shaders:
 ## Features
 
 > [!NOTE]
-> To use the action wheel, hold `B`, click to select and right click to go back.
+> To use the action wheel, hold `B`, click to select and right click (or press `Back`) to go back.
 
 - Tail physics (real)!
 - Custom animations! Too many to list. Watch the trailers!
-  - There are some extra animations you can play manually from the action wheel, moving stops the animation.
+  - Extra poses can be played from the `Poses` page; moving stops the pose. `Sleep` also plays the fox sleep call.
   - Closed eyes during sleep.
 - Hold certain items in the mouth. Tools will also be held in the mouth while sprinting. You can modify which items and tools are held in the mouth in `scripts/items.lua`.
-- Wag the tail and ears from the action wheel (animations page). Toggle it off to let the motion finish :3c
-- 6 different skins. Can be changed manually from the action wheel.
+- Wag the tail and ears from the action wheel (`Poses` page). Toggle it off to let the motion finish :3c
+- 6 biome-themed skins (Forest, Desert, Winter, Shadow, Nether and End Fox). Can be changed manually from the action wheel.
 
 ![skins](./misc/skins.png)
 
@@ -57,7 +57,7 @@ Shaders:
 - Replaces some player sounds with the vanilla fox sound effects.
 - Soundboard for the vanilla fox sound effects. Can be played from the action wheel.
   - Snores while sleeping.
-- Action wheel settings for blinking, fox sounds, snoring and idle tail wag.
+- Action wheel settings for blinking, fox sound effects, snoring and automatic tail sway while moving.
 
 ![sleepy](./misc/sleepy.png)
 

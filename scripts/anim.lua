@@ -1,7 +1,6 @@
 require("scripts.util")
 require("scripts.sleep")
 
-local wheel = require("scripts.wheel")
 local items = require("scripts.items")
 
 local aurianims = require("scripts.aurianims")
@@ -407,6 +406,7 @@ function events.entity_init()
 end
 
 local wheelAnim = nil
+local wheelAnimName = nil
 local wheelAnimPos = vec(0, 0, 0)
 local wAnimStopDistanceSquared = 0.01
 
@@ -420,6 +420,7 @@ function pings.stopWheelAnim()
         wheelAnim:stop()
         wheelAnim = nil
     end
+    wheelAnimName = nil
     animController.data.wheel = false
     pings.setWheelSleeping(false)
 end
@@ -427,6 +428,7 @@ function pings.playWheelAnim(animName)
     wheelAnimPos = player:getPos()
     if wheelAnim then wheelAnim:stop() end
     wheelAnim = animations.model[animName]
+    wheelAnimName = animName
     animController.data.wheel = true
     wheelAnim:play()
 end
@@ -442,35 +444,19 @@ function pings.setWag(enabled)
     end
 end
 
-wheel.animPage:newAction()
-:setTitle("sleep")
-:setItem("minecraft:red_bed")
-:onLeftClick(function (_)
-    pings.setWheelSleeping(true)
-    pings.playWheelAnim("wSleep")
-end)
-
-wheel.animPage:newAction()
-:setTitle("sit")
-:setItem("minecraft:spruce_stairs")
-:onLeftClick(function (_)
-    pings.setWheelSleeping(false)
-    pings.playWheelAnim("wSit")
-end)
-
-wheel.animPage:newAction()
-:setTitle("sit alt")
-:setItem("minecraft:oak_stairs")
-:onLeftClick(function (_)
-    pings.setWheelSleeping(false)
-    pings.playWheelAnim("wSitAlt")
-end)
-
-wheel.animPage:newAction()
-:setTitle("wag")
-:setToggleTitle("wagging")
-:setItem("minecraft:feather")
-:setToggleItem("minecraft:sugar")
-:onToggle(function (state, _)
-    pings.setWag(state)
-end)
+return {
+    activePose = function ()
+        return wheelAnimName
+    end,
+    sleep = function ()
+        pings.setWheelSleeping(true)
+        pings.playWheelAnim("wSleep")
+    end,
+    pose = function (animName)
+        pings.setWheelSleeping(false)
+        pings.playWheelAnim(animName)
+    end,
+    wag = function (enabled)
+        pings.setWag(enabled)
+    end,
+}

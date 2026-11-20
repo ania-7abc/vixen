@@ -1,5 +1,10 @@
 require("scripts.util")
 
+local anim = require("scripts.anim")
+local skins = require("scripts.skins")
+local sounds = require("scripts.sounds")
+local options = require("scripts.options")
+
 -- page history for backing
 local history = {}
 local function back()
@@ -22,45 +27,134 @@ function events.mouse_press(button, action, modifier)
 end
 
 -- pages
-local mainPage = action_wheel:newPage("main page")
-local soundboardPage = action_wheel:newPage("sounds")
-local skinPage = action_wheel:newPage("skins")
-local animPage = action_wheel:newPage("animations")
-local settingsPage = action_wheel:newPage("settings")
+local mainPage = action_wheel:newPage("Main")
+local posePage = action_wheel:newPage("Poses")
+local skinPage = action_wheel:newPage("Skins")
+local soundPage = action_wheel:newPage("Sounds")
+local settingsPage = action_wheel:newPage("Settings")
 action_wheel:setPage(mainPage)
 
--- main page entries
-mainPage:newAction()
-:setTitle("soundboard")
-:setItem("minecraft:note_block")
-:onLeftClick(function(_)
-    openPage(soundboardPage)
+local function addBackAction(page)
+    page:newAction()
+    :setTitle("Back")
+    :setItem("minecraft:arrow")
+    :onLeftClick(function (_)
+        back()
+    end)
+end
+
+local function addPageLink(title, item, page)
+    mainPage:newAction()
+    :setTitle(title)
+    :setItem(item)
+    :onLeftClick(function (_)
+        openPage(page)
+    end)
+end
+
+-- main page
+addPageLink("Poses", "minecraft:armor_stand", posePage)
+addPageLink("Skins", "minecraft:rabbit_hide", skinPage)
+addPageLink("Sounds", "minecraft:note_block", soundPage)
+addPageLink("Settings", "minecraft:totem_of_undying", settingsPage)
+
+-- poses: the sleep pose also plays the fox sleep call
+local poseActions = {}
+addBackAction(posePage)
+poseActions.wSleep = posePage:newAction()
+:setTitle("Sleep")
+:setItem("minecraft:red_bed")
+:onLeftClick(function (_)
+    anim.sleep()
+    sounds.play("sleep")
+end)
+poseActions.wSit = posePage:newAction()
+:setTitle("Sit (tucked)")
+:setItem("minecraft:spruce_stairs")
+:onLeftClick(function (_)
+    anim.pose("wSit")
+end)
+poseActions.wSitAlt = posePage:newAction()
+:setTitle("Sit (legs out)")
+:setItem("minecraft:oak_stairs")
+:onLeftClick(function (_)
+    anim.pose("wSitAlt")
 end)
 
-mainPage:newAction()
-:setTitle("skins")
-:setItem("minecraft:rabbit_hide")
-:onLeftClick(function (_)
-    openPage(skinPage)
+-- highlight the currently playing pose
+local activePose = nil
+function events.tick()
+    local current = anim.activePose()
+    if current == activePose then return end
+    activePose = current
+    for name, action in pairs(poseActions) do
+        action:setColor(name == current and vec(0, 1, 0) or nil)
+    end
+end
+
+posePage:newAction()
+:setTitle("Wag tail")
+:setToggleTitle("Wagging")
+:setItem("minecraft:feather")
+:setToggleItem("minecraft:sugar")
+:onToggle(function (state, _)
+    anim.wag(state)
 end)
 
-mainPage:newAction()
-:setTitle("animations")
-:setItem("minecraft:armor_stand")
+-- skins
+addBackAction(skinPage)
+for _, key in ipairs(skins.order) do
+    local entry = skins.entries[key]
+    skinPage:newAction()
+    :setTitle(entry.title)
+    :setItem(entry.icon)
+    :onLeftClick(function (_)
+        skins.select(key)
+    end)
+end
+skinPage:newAction()
+:setTitle("Auto (by biome)")
+:setItem("minecraft:command_block")
 :onLeftClick(function (_)
-    openPage(animPage)
+    skins.setAuto(true)
 end)
 
-mainPage:newAction()
-:setTitle("settings")
-:setItem("minecraft:totem_of_undying")
-:onLeftClick(function (_)
-    openPage(settingsPage)
-end)
+-- sounds
+local soundOrder = { "chirp", "bite", "eat", "growl", "screech", "sniff", "spit" }
+addBackAction(soundPage)
+for _, key in ipairs(soundOrder) do
+    local entry = sounds.entries[key]
+    soundPage:newAction()
+    :setTitle(entry.title)
+    :setItem(entry.icon)
+    :onLeftClick(function (_)
+        sounds.play(key)
+    end)
+end
+
+-- settings
+local function addToggle(key, title, item, toggleItem, ping)
+    local action = settingsPage:newAction()
+    :setTitle(title)
+    :setToggleTitle(title .. ": on")
+    :setItem(item)
+    :setToggleItem(toggleItem)
+    :onToggle(function (state, _)
+        ping(state)
+    end)
+    options.setAction(key, action)
+end
+
+addBackAction(settingsPage)
+addToggle("blinking", "Blinking", "minecraft:ender_eye", "minecraft:ender_pearl", pings.setBlinking)
+addToggle("foxSounds", "Fox SFX", "minecraft:sweet_berries", "minecraft:note_block", pings.setFoxSounds)
+addToggle("snoring", "Snoring", "minecraft:hay_block", "minecraft:red_bed", pings.setSnoring)
+addToggle("tailWag", "Auto tail sway", "minecraft:feather", "minecraft:sugar", pings.setTailWag)
 
 return {
+    mainPage = mainPage,
+    posePage = posePage,
     skinPage = skinPage,
-    soundboardPage= soundboardPage,
-    animPage = animPage,
+    soundPage = soundPage,
     settingsPage = settingsPage,
 }

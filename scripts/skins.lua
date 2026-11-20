@@ -1,35 +1,41 @@
 require("scripts.util")
 
-local wheel = require("scripts.wheel")
 local sleep = require("scripts.sleep")
 local options = require("scripts.options")
 
 local skinEntries = {
     Rebecca = {
+        title = "Forest Fox",
         texture = "assets.skin_rebecca",
         icon = "minecraft:redstone",
     },
     Mira = {
+        title = "End Fox",
         texture = "assets.skin_mira",
         icon = "minecraft:target",
     },
     Eva = {
+        title = "Nether Fox",
         texture = "assets.skin_eva",
         icon = "minecraft:crimson_nylium",
     },
     Rue = {
+        title = "Desert Fox",
         texture = "assets.skin_rue",
         icon = "minecraft:red_sand",
     },
     Kaya = {
+        title = "Winter Fox",
         texture = "assets.skin_kaya",
         icon = "minecraft:snow_block",
     },
     Thea = {
+        title = "Shadow Fox",
         texture = "assets.skin_thea",
         icon = "minecraft:coal_block",
     },
 }
+local skinOrder = { "Rebecca", "Rue", "Kaya", "Thea", "Eva", "Mira" }
 -- generate keys
 for key, value in pairs(skinEntries) do
     value["key"] = key
@@ -37,8 +43,8 @@ end
 
 local function validateSkinEntries()
     for key, skin in pairs(skinEntries) do
-        if not skin.icon then
-            log("[vixen] skin " .. key .. " is missing its icon")
+        if not skin.icon or not skin.title then
+            log("[vixen] skin " .. key .. " is missing its icon or title")
         end
         if not skin.texture then
             log("[vixen] skin " .. key .. " is missing its texture")
@@ -119,32 +125,14 @@ function pings.setSkin(skinKey)
     setSkin(skinEntries[skinKey] or currentSkin)
 end
 
--- skin entries
-for key, value in pairs(skinEntries) do
-    wheel.skinPage:newAction()
-    :setTitle(key)
-    :setItem(value.icon)
-    :onLeftClick(function (_)
-        pings.setAutoSkin(false)
-        pings.setSkin(value.key)
-    end)
-end
-wheel.skinPage:newAction()
-:setTitle("auto")
-:setItem("minecraft:command_block")
-:onLeftClick(function (_)
-    pings.setAutoSkin(true)
-    skinUpdateTimer = skinUpdateInterval
-end)
-
 local function updateAutoSkin()
-    -- eva in nether
+    -- nether fox in the nether
     local dimension = world.getDimension()
     if dimension == "minecraft:the_nether" then
         setSkin(skinEntries.Eva)
         return
     end
-    -- mira in end
+    -- end fox in the end
     if dimension == "minecraft:the_end" then
         setSkin(skinEntries.Mira)
         return
@@ -153,19 +141,26 @@ local function updateAutoSkin()
     local biome = world.getBiome(player:getPos())
     local temperature = biome:getTemperature()
 
-    -- kaya in cold
+    -- winter fox in cold biomes
     if temperature <= 0.25 then
         setSkin(skinEntries.Kaya)
         return
     end
 
-    -- eva in dark forests
-    if biome.id == "minecraft:dark_forest" then
-        setSkin(skinEntries.Eva)
+    -- desert fox in deserts and badlands
+    if biome.id and (biome.id:find("desert") or biome.id:find("badlands")) then
+        setSkin(skinEntries.Rue)
         return
     end
 
-    setSkin(skinEntries.Rue)
+    -- shadow fox in dark forests
+    if biome.id == "minecraft:dark_forest" then
+        setSkin(skinEntries.Thea)
+        return
+    end
+
+    -- forest fox everywhere else
+    setSkin(skinEntries.Rebecca)
 end
 
 function events.entity_init()
@@ -191,3 +186,16 @@ function events.tick()
 
     updateAutoSkin()
 end
+
+return {
+    entries = skinEntries,
+    order = skinOrder,
+    select = function (key)
+        pings.setAutoSkin(false)
+        pings.setSkin(key)
+    end,
+    setAuto = function (enabled)
+        pings.setAutoSkin(enabled)
+        if enabled then skinUpdateTimer = skinUpdateInterval end
+    end,
+}
