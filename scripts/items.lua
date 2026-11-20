@@ -50,23 +50,36 @@ local rightIP = models.model.root.RightArm.RightItemPivot
 local leftIP = models.model.root.LeftArm.LeftItemPivot
 local enderIP = models.model.root.Body.EnderPivot.EnderItemPivot
 
+local function setParentIfChanged(part, parent)
+    if part:getParentType() ~= parent then
+        part:setParentType(parent)
+    end
+end
+
+local function isHandBusy(heldItem, sprinting)
+    return isMouthItem(heldItem) or isMouthDrink(heldItem) or heldItem:isBlockItem() or (isMouthTool(heldItem) and sprinting)
+end
+
 function events.tick()
-    local handedness = false -- TODO player:isLeftHanded()
-    local mainHandItem = player:getHeldItem(handedness)
-    
+    local leftHanded = player:isLeftHanded()
+    local mainHandItem = player:getHeldItem()
+    local offHandItem = player:getHeldItem(true)
+    local rightHandItem = leftHanded and offHandItem or mainHandItem
+    local leftHandItem = leftHanded and mainHandItem or offHandItem
+
     local item = isMouthItem(mainHandItem)
     local tool = isMouthTool(mainHandItem)
     local drink = isMouthDrink(mainHandItem)
     local block = mainHandItem:isBlockItem()
     local sprinting = player:isSprinting()
+    local mainHandPivot = leftHanded and "LeftItemPivot" or "RightItemPivot"
 
-    enderIP:setParentType(block and "RightItemPivot" or "None")
-    
-    rightIP:setParentType((not handedness and not item and not drink and not block and not (tool and sprinting)) and "RightItemPivot" or "None")
-    -- TODO fix pivot breaking when the secondary arms parent type is changed 
-    --leftIP:setParentType((handedness and not isItem and not isTool) and "LeftItemPivot" or "None")
-    
-    mouthDP:setParentType((drink) and (handedness and "LeftItemPivot" or "RightItemPivot") or "None")
-    mouthIP:setParentType((item and not drink) and (handedness and "LeftItemPivot" or "RightItemPivot") or "None")
-    mouthTP:setParentType((tool and sprinting) and (handedness and "LeftItemPivot" or "RightItemPivot") or "None")
+    enderIP:setParentType(block and mainHandPivot or "None")
+
+    setParentIfChanged(rightIP, isHandBusy(rightHandItem, sprinting) and "None" or "RightItemPivot")
+    setParentIfChanged(leftIP, isHandBusy(leftHandItem, sprinting) and "None" or "LeftItemPivot")
+
+    mouthDP:setParentType(drink and mainHandPivot or "None")
+    mouthIP:setParentType(item and not drink and mainHandPivot or "None")
+    mouthTP:setParentType(tool and sprinting and mainHandPivot or "None")
 end
