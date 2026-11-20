@@ -426,7 +426,7 @@ local wheelPoseAnim = wheelSwapNode
 
 local wagBlendAnim = aurianims.func(
     function (data, blend)
-        animations.model.tailWag:blend(burn.isBurning() and 0 or data.wagBlend)
+        animations.model.tailWag:blend(data.wagBlend)
     end
 )
 

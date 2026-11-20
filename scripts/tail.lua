@@ -1,7 +1,6 @@
 -- inspired by Auriafoxgirl
 
 local options = require("scripts.options")
-local burn = require("scripts.burn")
 
 local tail = models.model.root.Tail.Actual
 local tailTarget = models.model.root.Tail.Target
@@ -41,7 +40,6 @@ function events.tick()
     local playerPose = player:getPose()
     local waterStrength = 1
     local wagWalkSpeed = 1
-    local burning = burn.isBurning()
     if playerPose == "SWIMMING" then
         if #world.getBlockState(player:getPos()):getFluidTags() >= 1 then
             bodyPitch = -90 - player:getRot().x
@@ -56,7 +54,7 @@ function events.tick()
         waterStrength = 0.5
         wagWalkSpeed = 0.5
     end
-    if not options.tailWag or burning then wagWalkSpeed = 0 end
+    if not options.tailWag then wagWalkSpeed = 0 end
     local playerVelRaw = vectors.rotateAroundAxis(bodyPitch, playerVel, vec(1, 0, 0))
 
     -- calculate body rotation difference
@@ -73,11 +71,8 @@ function events.tick()
     local tailAnimated = targetAnimRot:lengthSquared() ~= 0
     local tailWagged = targetAnimRot.y ~= 0 or targetAnimRot.z ~= 0
 
-    -- burning overrides any pose and wag animation
-    if burning then
-        targetRot = vec(55, 0, 0)
-        tailAnimated = true
-    elseif not tailAnimated then
+    -- rotate tail based on velocity while its not animated
+    if not tailAnimated then
         local velRot = vec(
             math.clamp(playerVelRaw.y, -1, 1) * 90 - math.clamp(playerVelRaw.z, -0.5, 0.5) * 90,
             playerVelRaw.x * 45,
@@ -111,10 +106,6 @@ function events.tick()
     if tailWagged then wagWalkSpeed = options.tailWag and 0.1 or 0 end -- wag less while its animated
     oldWagStrength = newWagStrength
     newWagStrength = math.lerp(newWagStrength, speed * waterStrength * wagWalkSpeed, 0.1)
-    if burning then
-        oldWagStrength = 0
-        newWagStrength = 0
-    end
 
 end
 

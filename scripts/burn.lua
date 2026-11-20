@@ -1,5 +1,3 @@
--- burning pose: paws raised back with a slow sway
-
 local function isBurning()
     return player:isLoaded() and player:isOnFire()
 end
@@ -9,9 +7,8 @@ local rightArm = models.model.root.RightArm
 
 local function swayArm(part, side, time)
     local phase = time * 6 + (side < 0 and 0 or math.pi)
-    local x = -140 + math.sin(phase) * 8
-    local z = side * 25 + math.sin(phase) * 10
-    part:offsetRot(vec(x, 0, z))
+    local sway = math.sin(phase) * 6
+    part:offsetRot(vec(140 + sway, 0, -side * 28 + sway))
 end
 
 function events.render(delta)
