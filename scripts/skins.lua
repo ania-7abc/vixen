@@ -1,3 +1,5 @@
+require("scripts.util")
+
 local wheel = require("scripts.wheel")
 local sleep = require("scripts.sleep")
 
@@ -156,6 +158,7 @@ end
 
 function events.entity_init()
     -- load config
+    migrateConfig()
     if host:isHost() then
         overridePlayerName = safeConfigLoad("overridePlayerName", overridePlayerName)
         pings.setNamePlate(overridePlayerName)

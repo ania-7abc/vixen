@@ -1,3 +1,25 @@
+local CONFIG_VERSION = 1
+
+local migrations = {
+    -- custom skins were removed in this fork, so saves must not point at one
+    [1] = function ()
+        if config:load("currentSkin") == "Custom" then
+            config:save("currentSkin", "Rebecca")
+        end
+    end,
+}
+
+function migrateConfig()
+    if not host:isHost() then return end
+    local version = config:load("configVersion") or 0
+    while version < CONFIG_VERSION do
+        local migrate = migrations[version + 1]
+        if migrate then migrate() end
+        version = version + 1
+    end
+    config:save("configVersion", version)
+end
+
 ---@param tbl table
 ---@param x any
 ---@return boolean
@@ -27,6 +49,7 @@ end
 ---@param default any
 ---@return any
 function safeConfigLoad(key, default)
+    if not host:isHost() then return default end
     local value = config:load(key)
     if value == nil then
         config:save(key, default)
