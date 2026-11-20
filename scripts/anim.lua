@@ -62,21 +62,22 @@ animController:setDriver(function (data)
     data.smoothWalkScale = math.lerp(data.smoothWalkScale, data.walkScale, 0.5)
     data.smoothForwardScale = math.lerp(data.smoothForwardScale, math.clamp(data.forwardSpeed * speedMult, -1, 1), 0.5)
 
-    data.oldOnGround = data.onGround
+    data.oldOnGround = data.isOnGround
     data.isOnGround = onGround
     data.groundTime = data.isOnGround and data.groundTime + 1 or 0
     data.airTime = data.isOnGround and 0 or data.airTime + 1
 
     data.jumpTime = data.jumpTime * 0.85
-    if not data.onGround and data.oldOnGround and velocity.y > 0.1 then
+    if not data.isOnGround and data.oldOnGround and velocity.y > 0.1 then
         data.jumpTime = math.min(velocity.y * 8, 2)
-    elseif data.onGround then
+    elseif data.isOnGround then
         data.jumpTime = math.lerp(data.jumpTime, 0, 0.6)
     end
 end,
 {
     wheel = false,
     blockHand = "R",
+    isOnGround = false,
     groundTime = 0,
     airTime = 0,
     jumpTime = 0,
