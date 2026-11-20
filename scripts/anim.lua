@@ -1,3 +1,6 @@
+require("scripts.util")
+require("scripts.sleep")
+
 local wheel = require("scripts.wheel")
 
 local aurianims = require("scripts.aurianims")
@@ -439,7 +442,7 @@ function pings.stopWheelAnim()
         wheelAnim = nil
     end
     animController.data.wheel = false
-    pings.setSkinSleeping(false)
+    pings.setWheelSleeping(false)
 end
 function pings.playWheelAnim(animName)
     wheelAnimPos = player:getPos()
@@ -453,7 +456,7 @@ wheel.animPage:newAction()
 :setTitle("sleep")
 :setItem("minecraft:red_bed")
 :onLeftClick(function (_)
-    pings.setSkinSleeping(true)
+    pings.setWheelSleeping(true)
     pings.playWheelAnim("wSleep")
 end)
 
@@ -461,7 +464,7 @@ wheel.animPage:newAction()
 :setTitle("sit")
 :setItem("minecraft:spruce_stairs")
 :onLeftClick(function (_)
-    pings.setSkinSleeping(false)
+    pings.setWheelSleeping(false)
     pings.playWheelAnim("wSit")
 end)
 
@@ -469,6 +472,6 @@ wheel.animPage:newAction()
 :setTitle("sit alt")
 :setItem("minecraft:oak_stairs")
 :onLeftClick(function (_)
-    pings.setSkinSleeping(false)
+    pings.setWheelSleeping(false)
     pings.playWheelAnim("wSitAlt")
 end)

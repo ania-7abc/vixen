@@ -1,4 +1,5 @@
 local wheel = require("scripts.wheel")
+local sleep = require("scripts.sleep")
 
 local skinEntries = {
     Rebecca = {
@@ -34,8 +35,9 @@ local skinEntries = {
 }
 -- generate keys
 for key, value in pairs(skinEntries) do
-    value["key"] = key 
+    value["key"] = key
 end
+
 local currentSkin = skinEntries.Rebecca
 
 -- automatic skin updated based on the biome
@@ -58,23 +60,15 @@ function pings.setNamePlate(override)
 end
 
 -- sleeping
-local isSleeping = false
-local wheelSleeping = false
 local appliedSleeping = nil
 local function updateSkinSleepingTexture()
-    local sleeping = isSleeping or wheelSleeping
+    local sleeping = sleep.isSleeping()
     if appliedSleeping == sleeping then return end
     appliedSleeping = sleeping
     models.model.root.Head:setPrimaryTexture("CUSTOM", textures[sleeping and (currentSkin.texture .. "_sleep") or currentSkin.texture])
 end
-local function setSkinSleeping(enabled)
-    isSleeping = enabled
-    updateSkinSleepingTexture()
-end
-function pings.setSkinSleeping(enabled)
-    wheelSleeping = enabled
-    updateSkinSleepingTexture()
-end
+sleep.onChange(updateSkinSleepingTexture)
+
 local function setSkin(skin)
     if currentSkin == skin then return end
     currentSkin = skin
@@ -152,7 +146,7 @@ function events.entity_init()
 end
 
 function events.tick()
-    setSkinSleeping(player:getPose() == "SLEEPING")
+    sleep.setInBed(player:getPose() == "SLEEPING")
 
     if not autoSkinEnabled then return end
     if skinUpdateTimer < skinUpdateInterval then

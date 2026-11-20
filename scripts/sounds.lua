@@ -1,4 +1,5 @@
 local wheel = require("scripts.wheel")
+local sleep = require("scripts.sleep")
 
 -- soundboard sounds
 local soundboardEntries = {
@@ -63,8 +64,7 @@ end
 local snoringInterval = 60
 local snoringTimer = 0
 function events.tick()
-    local isSleeping = player:getPose() == "SLEEPING"
-    if not isSleeping then return end
+    if not sleep.isSleeping() then return end
 
     if snoringTimer < snoringInterval then 
         snoringTimer = snoringTimer + 1
