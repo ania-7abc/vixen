@@ -8,6 +8,18 @@ local nodeClass = {type = nil}
 
 local controllers = {}
 
+local function resetNode(node)
+   if type(node) ~= 'table' then return end
+   if node.blend then node.blend = 0 end
+   if node.oldBlend then node.oldBlend = 0 end
+   if node.anim1 then resetNode(node.anim1) end
+   if node.anim2 then resetNode(node.anim2) end
+   if node.anim then resetNode(node.anim) end
+   if node.anims then
+      for _, v in pairs(node.anims) do resetNode(v) end
+   end
+end
+
 ---creates new animation controller
 ---@return aurianims.controller
 function lib.new()
@@ -26,9 +38,24 @@ end
 ---@return aurianims.controller
 function animController:setDriver(func, startData)
    self.dataFunc = func
+   self.startData = {}
+   for k, v in pairs(startData or {}) do
+      self.startData[k] = v
+   end
    if startData then
       self.data = startData
    end
+   return self
+end
+
+---restores the driver data and all node blends to their initial state
+---@return aurianims.controller
+function animController:reset()
+   self.data = {}
+   for k, v in pairs(self.startData or {}) do
+      self.data[k] = v
+   end
+   resetNode(self.tree)
    return self
 end
 
