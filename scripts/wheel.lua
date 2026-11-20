@@ -78,15 +78,30 @@ poseActions.wSitAlt = posePage:newAction()
     if anim.activePose() == "wSitAlt" then anim.stop() else anim.pose("wSitAlt") end
 end)
 
--- highlight the currently playing pose
+-- highlight the currently playing pose and selected skin
+local skinActions = {}
+local autoSkinAction
 local activePose = nil
+local activeSkin = nil
+local autoSkin = nil
 function events.tick()
     local current = anim.activePose()
-    if current == activePose then return end
-    activePose = current
-    for name, action in pairs(poseActions) do
-        action:setColor(name == current and vec(0, 1, 0) or nil)
+    if current ~= activePose then
+        activePose = current
+        for name, action in pairs(poseActions) do
+            action:setColor(name == current and vec(0, 1, 0) or nil)
+        end
     end
+
+    local skin = skins.activeKey()
+    local auto = skins.isAuto()
+    if skin == activeSkin and auto == autoSkin then return end
+    activeSkin = skin
+    autoSkin = auto
+    for key, action in pairs(skinActions) do
+        action:setColor(key == skin and not auto and vec(0, 1, 0) or nil)
+    end
+    autoSkinAction:setColor(auto and vec(0, 1, 0) or nil)
 end
 
 wagAction = posePage:newAction()
@@ -102,14 +117,14 @@ end)
 -- skins
 for _, key in ipairs(skins.order) do
     local entry = skins.entries[key]
-    skinPage:newAction()
+    skinActions[key] = skinPage:newAction()
     :setTitle(entry.title)
     :setItem(entry.icon)
     :onLeftClick(function (_)
         skins.select(key)
     end)
 end
-skinPage:newAction()
+autoSkinAction = skinPage:newAction()
 :setTitle("Auto (by biome)")
 :setItem("minecraft:command_block")
 :onLeftClick(function (_)

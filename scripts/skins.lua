@@ -190,6 +190,12 @@ end
 return {
     entries = skinEntries,
     order = skinOrder,
+    activeKey = function ()
+        return currentSkin.key
+    end,
+    isAuto = function ()
+        return autoSkinEnabled
+    end,
     select = function (key)
         pings.setAutoSkin(false)
         pings.setSkin(key)
