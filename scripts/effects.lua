@@ -19,7 +19,7 @@ local function spawnZ()
     local base = models.model.root.Head:partToWorldMatrix():apply() + vec(0, 0.4, 0)
     for _, offset in ipairs(zPoints) do
         local particle = particles:newParticle("dust 0.85 0.95 1 1", base + offset, vec(0, 0.03, 0))
-        particle:setScale(0.4)
+        particle:setScale(1.5)
         particle:setLifetime(zLifetime)
         particle:setGravity(0)
     end
