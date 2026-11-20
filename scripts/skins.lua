@@ -38,6 +38,25 @@ for key, value in pairs(skinEntries) do
     value["key"] = key
 end
 
+local function validateSkinEntries()
+    for key, skin in pairs(skinEntries) do
+        if not skin.icon or not skin.name then
+            log("[vixen] skin " .. key .. " is missing its icon or name")
+        end
+        if not skin.texture then
+            log("[vixen] skin " .. key .. " is missing its texture")
+        else
+            if not textures[skin.texture] then
+                log("[vixen] skin " .. key .. " is missing texture " .. skin.texture)
+            end
+            if not textures[skin.texture .. "_sleep"] then
+                log("[vixen] skin " .. key .. " is missing sleeping texture " .. skin.texture .. "_sleep")
+            end
+        end
+    end
+end
+validateSkinEntries()
+
 local currentSkin = skinEntries.Rebecca
 
 -- automatic skin updated based on the biome
