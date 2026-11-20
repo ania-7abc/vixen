@@ -45,7 +45,7 @@ Shaders:
 
 - Tail physics (real)!
 - Custom animations! Too many to list. Watch the trailers!
-  - There are some extra animations you can play manually from the action wheel, moving stops the animation. Use the reset button to return to the normal pose right away.
+  - There are some extra animations you can play manually from the action wheel, moving stops the animation.
   - Closed eyes during sleep.
 - Hold certain items in the mouth. Tools will also be held in the mouth while sprinting. You can modify which items and tools are held in the mouth in `scripts/items.lua`.
 - Wag the tail and ears from the action wheel (animations page). Toggle it off to let the motion finish :3c
