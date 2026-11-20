@@ -170,7 +170,7 @@ nodesUpdate = {
       update(controller, node.anim2, blendMul * blend)
    end,
    stack = function(controller, node, blendMul)
-      for _, v in pairs(node.anims) do
+      for _, v in ipairs(node.anims) do
          update(controller, v, blendMul)
       end
    end,
@@ -224,7 +224,7 @@ nodesUpdateRender = {
       updateRender(delta, controller, node.anim2, blendMul * blend)
    end,
    stack = function(delta, controller, node, blendMul)
-      for _, v in pairs(node.anims) do
+      for _, v in ipairs(node.anims) do
          updateRender(delta, controller, v, blendMul)
       end
    end,

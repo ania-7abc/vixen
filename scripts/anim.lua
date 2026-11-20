@@ -18,6 +18,9 @@ animController:setDriver(function (data)
     local inLiquid = #world.getBlockState(player:getPos()):getFluidTags() >= 1
     local vehicle = player:getVehicle()
     local isCrouching = player:isCrouching()
+    local onGround = player:isOnGround()
+    -- getPose() has no climbing value, so use a synthetic one for the tree
+    local climbing = player:isClimbing() and not onGround and pose ~= "FALL_FLYING" and pose ~= "SWIMMING"
 
     -- hands
     local handedness = player:isLeftHanded()
@@ -38,7 +41,11 @@ animController:setDriver(function (data)
     data.blockHeld = mainBlock or leftItem:isBlockItem() or rightItem:isBlockItem()
     data.blockHand = mainBlock and (handedness and "L" or "R") or (leftItem:isBlockItem() and "L" or "R")
 
-    if vehicle ~= nil then pose = "SITTING" end
+    if vehicle ~= nil then
+        pose = "SITTING"
+    elseif climbing then
+        pose = "CLIMBING"
+    end
     data.pose = pose
 
     data.isSprinting = sprinty and not inLiquid
@@ -56,7 +63,7 @@ animController:setDriver(function (data)
     data.smoothForwardScale = math.lerp(data.smoothForwardScale, math.clamp(data.forwardSpeed * speedMult, -1, 1), 0.5)
 
     data.oldOnGround = data.onGround
-    data.isOnGround = player:isOnGround()
+    data.isOnGround = onGround
     data.groundTime = data.isOnGround and data.groundTime + 1 or 0
     data.airTime = data.isOnGround and 0 or data.airTime + 1
 
@@ -360,6 +367,7 @@ local playerAnim = aurianims.step(
             {
                 SLEEPING = modelAnims.sleep,
                 SITTING = modelAnims.sit,
+                CLIMBING = modelAnims.climb,
                 CROUCHING = crouchAnim,
                 STANDING = aurianims.stack{
                     movementAnim,
@@ -389,7 +397,7 @@ local fallingAnim = aurianims.step(
 
 local headTiltAnim = aurianims.func(
     function (data, blend)
-        if data.pose == "FALL_FLYING" or data.pose == "SWIMMING" or data.pose == "SPIN_ATTACK" then return end
+        if data.pose == "FALL_FLYING" or data.pose == "SWIMMING" or data.pose == "SPIN_ATTACK" or data.pose == "CLIMBING" then return end
         models.model.root.Head:offsetRot(vec(data.headTilt * blend, 0, 0))
     end
 )
