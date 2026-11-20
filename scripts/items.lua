@@ -68,7 +68,7 @@ local function isHandBusy(heldItem, sprinting)
     return isMouthItem(heldItem) or isMouthDrink(heldItem) or (isMouthTool(heldItem) and sprinting)
 end
 
-function events.tick()
+function events.render()
     local leftHanded = player:isLeftHanded()
     local mainHandItem = player:getHeldItem()
     local offHandItem = player:getHeldItem(true)
@@ -94,7 +94,7 @@ function events.tick()
     local itemParent = drinkParent == "None" and mouthPivot("item") or "None"
     local toolParent = drinkParent == "None" and itemParent == "None" and mouthPivot("tool") or "None"
 
-    mouthDP:setParentType(drinkParent)
-    mouthIP:setParentType(itemParent)
-    mouthTP:setParentType(toolParent)
+    setParentIfChanged(mouthDP, drinkParent)
+    setParentIfChanged(mouthIP, itemParent)
+    setParentIfChanged(mouthTP, toolParent)
 end
