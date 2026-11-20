@@ -1,6 +1,7 @@
 require("scripts.util")
-require("scripts.sleep")
 
+local sleep = require("scripts.sleep")
+local options = require("scripts.options")
 local items = require("scripts.items")
 
 local aurianims = require("scripts.aurianims")
@@ -395,6 +396,47 @@ local headTiltAnim = aurianims.func(
     end
 )
 
+-- occasional idle flick of one ear
+local earTwitchMinDelay = 40
+local earTwitchMaxDelay = 100
+local earTwitchTimer = math.random(earTwitchMinDelay, earTwitchMaxDelay)
+local earTwitchTicks = 0
+local earTwitchDuration = 1
+local earTwitchSide = "Left"
+local earTwitchDir = 1
+
+local function tickEarTwitch()
+    if not options.earTwitch or sleep.isSleeping() then
+        earTwitchTicks = 0
+        return
+    end
+    if earTwitchTicks > 0 then
+        earTwitchTicks = earTwitchTicks - 1
+        if earTwitchTicks == 0 then
+            earTwitchTimer = math.random(earTwitchMinDelay, earTwitchMaxDelay)
+        end
+    else
+        earTwitchTimer = earTwitchTimer - 1
+        if earTwitchTimer <= 0 then
+            earTwitchTicks = math.random(2, 4)
+            earTwitchDuration = earTwitchTicks
+            earTwitchSide = math.random(0, 1) == 0 and "Left" or "Right"
+            earTwitchDir = math.random(0, 1) == 0 and -1 or 1
+        end
+    end
+end
+
+local earTwitchAnim = aurianims.func(
+    function (data, blend)
+        if earTwitchTicks <= 0 or blend < 0.001 then return end
+        local progress = 1 - earTwitchTicks / earTwitchDuration
+        local envelope = math.sin(progress * math.pi)
+        local angle = earTwitchDir * 14 * envelope * blend
+        local ear = earTwitchSide == "Left" and models.model.root.Head.LeftEar or models.model.root.Head.RightEar
+        ear:offsetRot(vec(-angle, 0, angle * 0.35))
+    end
+)
+
 -- blend the two pose animations directly, so a swap never drops to the idle pose
 local wheelSwapNode = aurianims.mix(
     function (data)
@@ -412,6 +454,7 @@ local mainAnim = aurianims.mix(
     aurianims.stack{
         playerAnim,
         headTiltAnim,
+        earTwitchAnim,
     },
     wheelPoseAnim
 )
@@ -429,6 +472,7 @@ local wAnimStopDistanceSquared = 0.01
 function events.tick()
     -- stop wheel anims when moving
     if wheelAnimName and (wheelAnimPos - player:getPos()):lengthSquared() > wAnimStopDistanceSquared then pings.stopWheelAnim() end
+    tickEarTwitch()
 end
 
 function pings.stopWheelAnim()

@@ -57,7 +57,7 @@ Shaders:
 - Replaces some player sounds with the vanilla fox sound effects.
 - Soundboard for the vanilla fox sound effects. Can be played from the action wheel.
   - Snores while sleeping.
-- Action wheel settings for blinking, fox sound effects, snoring, automatic tail sway while moving and carrying a lone item in the mouth.
+- Action wheel settings for blinking, fox sound effects, snoring, automatic tail sway while moving, carrying a lone item in the mouth and occasional idle ear twitching.
 
 ![sleepy](./misc/sleepy.png)
 

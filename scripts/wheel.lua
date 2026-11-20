@@ -146,6 +146,7 @@ addToggle("foxSounds", "Fox SFX", "minecraft:sweet_berries", "minecraft:note_blo
 addToggle("snoring", "Snoring", "minecraft:hay_block", "minecraft:red_bed", pings.setSnoring)
 addToggle("tailWag", "Auto tail sway", "minecraft:feather", "minecraft:sugar", pings.setTailWag)
 addToggle("allInMouth", "All in mouth", "minecraft:chest", "minecraft:cooked_chicken", pings.setAllInMouth)
+addToggle("earTwitch", "Ear twitch", "minecraft:rabbit_foot", "minecraft:rabbit_hide", pings.setEarTwitch)
 
 return {
     mainPage = mainPage,
