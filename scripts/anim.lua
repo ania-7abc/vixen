@@ -100,9 +100,15 @@ animController:setDriver(function (data)
     data.jumpDownBlend = math.lerp(data.jumpDownBlend, (falling or data.jumpPhase == 1) and 1 or 0, 0.5)
 
     data.crouchAirBlend = math.lerp(data.crouchAirBlend, data.isOnGround and 0 or 1, 0.5)
+
+    -- fade wheel poses in and out instead of snapping into them
+    data.wheelBlend = math.lerp(data.wheelBlend, data.wheel and 1 or 0, 0.2)
+    if not data.wheel and data.wheelBlend < 0.01 then data.wheelPose = nil end
 end,
 {
     wheel = false,
+    wheelBlend = 0,
+    wheelPose = nil,
     isOnGround = false,
     airTime = 0,
     groundTime = 0,
@@ -388,15 +394,26 @@ local headTiltAnim = aurianims.func(
     end
 )
 
-local mainAnim = aurianims.step(
+local wheelPoseAnim = aurianims.switch(
     function (data)
-        return data.wheel
+        return data.wheelPose
     end,
-    nil,
+    {
+        wSleep = modelAnims.wSleep,
+        wSit = modelAnims.wSit,
+        wSitAlt = modelAnims.wSitAlt,
+    }
+)
+
+local mainAnim = aurianims.mix(
+    function (data)
+        return data.wheelBlend
+    end,
     aurianims.stack{
         playerAnim,
         headTiltAnim,
-    }
+    },
+    wheelPoseAnim
 )
 
 animController:setTree(mainAnim)
@@ -405,32 +422,27 @@ function events.entity_init()
     animations.model.sprint:setSpeed(sprintAnimSpeedMult)
 end
 
-local wheelAnim = nil
 local wheelAnimName = nil
 local wheelAnimPos = vec(0, 0, 0)
 local wAnimStopDistanceSquared = 0.01
 
 function events.tick()
     -- stop wheel anims when moving
-    if wheelAnim and (wheelAnimPos - player:getPos()):lengthSquared() > wAnimStopDistanceSquared then pings.stopWheelAnim() end
+    if wheelAnimName and (wheelAnimPos - player:getPos()):lengthSquared() > wAnimStopDistanceSquared then pings.stopWheelAnim() end
 end
 
 function pings.stopWheelAnim()
-    if wheelAnim then
-        wheelAnim:stop()
-        wheelAnim = nil
-    end
     wheelAnimName = nil
     animController.data.wheel = false
     pings.setWheelSleeping(false)
 end
 function pings.playWheelAnim(animName)
     wheelAnimPos = player:getPos()
-    if wheelAnim then wheelAnim:stop() end
-    wheelAnim = animations.model[animName]
+    -- fade through the current pose when switching to another one
+    if wheelAnimName ~= animName then animController.data.wheelBlend = 0 end
     wheelAnimName = animName
+    animController.data.wheelPose = animName
     animController.data.wheel = true
-    wheelAnim:play()
 end
 
 function pings.setWag(enabled)
