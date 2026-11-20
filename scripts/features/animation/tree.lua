@@ -18,20 +18,20 @@ function tree.setup(controller)
             parts.rightArm
         }, function (name, rot)
             local handedness = player:isLeftHanded()
-            local offhand = name == "RIGHT_ARM" and handedness or not handedness
+            -- RIGHT_ARM is the main hand for a right-handed player and the
+            -- offhand for a left-handed one; LEFT_ARM is the opposite.
+            -- getHeldItem(true) is the offhand item, getHeldItem(false) the main.
+            local offhand = (name == "RIGHT_ARM") == handedness
             local heldItem = player:getHeldItem(offhand)
             if not items.isHandBusy(heldItem, player:isSprinting(), offhand) then return end
 
-            -- the item is routed to the mouth, but vanilla still sees it in the
-            -- hand and puts the arm into a grip pose. Drop that vanilla pose
-            -- completely instead of only subtracting its 18 degree tilt: the
-            -- remaining rotation still reads as "holding an item" from any view.
-            -- Keep the natural walk swing from the matching leg (arms and legs
-            -- are in antiphase and the leg has no item pose or idle bob).
+            -- vanilla halves the walk swing and tilts the arm down 18 degrees
+            -- for held items. Undo that part, but take the missing half of the
+            -- swing from the matching leg: both use the same walk cycle in
+            -- antiphase, and the leg has no item pose or idle bob, so simply
+            -- doubling the arm rotation would double the bob as well.
             local leg = name == "RIGHT_ARM" and vanilla_model.RIGHT_LEG or vanilla_model.LEFT_LEG
-            rot.x = -leg:getOriginRot().x / 2.8
-            rot.y = 0
-            rot.z = 0
+            rot.x = rot.x - 18 - leg:getOriginRot().x / 2.8
         end),
         modelAnims.handOverride -- override hand animations so that they dont play twice
     }
