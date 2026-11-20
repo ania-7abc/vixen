@@ -53,6 +53,7 @@ Shaders:
 
 ![skins](./misc/skins.png)
 
+- Optional collar, scarf and bow tie on the `Accessories` page of the action wheel.
 - Adaptive skin depending on the biome and dimension. Can be enabled from the action wheel.
 - Replaces some player sounds with the vanilla fox sound effects.
 - Soundboard for the vanilla fox sound effects. Can be played from the action wheel.

@@ -2,6 +2,7 @@ require("scripts.util")
 
 local anim = require("scripts.anim")
 local skins = require("scripts.skins")
+local accessories = require("scripts.accessories")
 local sounds = require("scripts.sounds")
 local options = require("scripts.options")
 
@@ -30,6 +31,7 @@ end
 local mainPage = action_wheel:newPage("Main")
 local posePage = action_wheel:newPage("Poses")
 local skinPage = action_wheel:newPage("Skins")
+local accessoryPage = action_wheel:newPage("Accessories")
 local soundPage = action_wheel:newPage("Sounds")
 local settingsPage = action_wheel:newPage("Settings")
 local visualSettingsPage = action_wheel:newPage("Visual settings")
@@ -49,6 +51,7 @@ end
 -- main page
 addPageLink("Poses", "minecraft:armor_stand", posePage)
 addPageLink("Skins", "minecraft:rabbit_hide", skinPage)
+addPageLink("Accessories", "minecraft:leather", accessoryPage)
 addPageLink("Sounds", "minecraft:note_block", soundPage)
 addPageLink("Settings", "minecraft:totem_of_undying", settingsPage)
 
@@ -151,6 +154,25 @@ autoSkinAction = skinPage:newAction()
     skins.setAuto(true)
 end)
 
+-- accessories
+local accessoryEntries = {
+    { key = "collar", title = "Collar", item = "minecraft:lead", toggleItem = "minecraft:iron_ingot" },
+    { key = "scarf", title = "Scarf", item = "minecraft:white_wool", toggleItem = "minecraft:red_wool" },
+    { key = "bowTie", title = "Bow tie", item = "minecraft:paper", toggleItem = "minecraft:purple_dye" },
+}
+for _, entry in ipairs(accessoryEntries) do
+    local key = entry.key
+    local action = accessoryPage:newAction()
+    :setTitle(entry.title)
+    :setToggleTitle(entry.title .. ": on")
+    :setItem(entry.item)
+    :setToggleItem(entry.toggleItem)
+    :onToggle(function (state, _)
+        accessories.set(key, state)
+    end)
+    accessories.setAction(key, action)
+end
+
 -- sounds
 local soundOrder = { "chirp", "bite", "eat", "growl", "screech", "sniff", "spit" }
 for _, key in ipairs(soundOrder) do
@@ -200,6 +222,7 @@ return {
     mainPage = mainPage,
     posePage = posePage,
     skinPage = skinPage,
+    accessoryPage = accessoryPage,
     soundPage = soundPage,
     settingsPage = settingsPage,
     visualSettingsPage = visualSettingsPage,
