@@ -255,30 +255,41 @@ function tree.setup(controller)
         crouchAnim
     )
 
+    local onGroundAnim = lib.step(
+        function (data)
+            return data.pose == "SWIMMING"
+        end,
+        bendKneesToVanilla,
+        lib.switch(
+            function (data)
+                -- both ground poses share one fade node, so it must appear
+                -- under a single key or the switch updates it twice
+                if data.pose == "STANDING" or data.pose == "CROUCHING" then return "GROUND" end
+                return data.pose
+            end,
+            {
+                SLEEPING = modelAnims.sleep,
+                SITTING = modelAnims.sit,
+                CLIMBING = modelAnims.climb,
+                GROUND = groundAnim,
+            }
+        )
+    )
+
+    -- creative flight reports STANDING in Figura, so it goes through the ground
+    -- tree. Cross-fade that whole tree into the flight pose on takeoff instead
+    -- of letting the jump animation play; landing fades back out the same way.
     local playerAnim = lib.step(
         function (data)
             return data.pose == "FALL_FLYING" or data.pose == "SPIN_ATTACK"
         end,
         flightAnim,
-        lib.step(
+        lib.mix(
             function (data)
-                return data.pose == "SWIMMING"
+                return data.flyBlend
             end,
-            bendKneesToVanilla,
-            lib.switch(
-                function (data)
-                    -- both ground poses share one fade node, so it must appear
-                    -- under a single key or the switch updates it twice
-                    if data.pose == "STANDING" or data.pose == "CROUCHING" then return "GROUND" end
-                    return data.pose
-                end,
-                {
-                    SLEEPING = modelAnims.sleep,
-                    SITTING = modelAnims.sit,
-                    CLIMBING = modelAnims.climb,
-                    GROUND = groundAnim,
-                }
-            )
+            onGroundAnim,
+            modelAnims.fly
         )
     )
 

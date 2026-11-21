@@ -4,12 +4,21 @@ local modelAnims = animations["model"]
 
 local driver = {}
 
+-- creative flying is host-only information in Figura, so the host syncs it
+-- to the other clients with a ping whenever the state changes
+local creativeFlying = false
+local lastSentFlying = false
+
 local function isFalling(data)
-    if data.pose ~= "STANDING" then return false end
+    if data.pose ~= "STANDING" or data.creativeFlying then return false end
     return not data.isOnGround and data.velocity.y < -0.1 and data.jumpTime <= 0.01 and data.airTime > 1
 end
 
 function driver.setup(controller)
+    function pings.setCreativeFlying(value)
+        creativeFlying = value
+    end
+
     controller:setDriver(function (data)
         local velocity = player:getVelocity()
         local bodyRot = player:getBodyYaw(1)
@@ -22,6 +31,20 @@ function driver.setup(controller)
         local onGround = player:isOnGround()
         -- getPose() has no climbing value, so use a synthetic one for the tree
         local climbing = player:isClimbing() and not onGround and pose ~= "FALL_FLYING" and pose ~= "SWIMMING"
+
+        if host:isHost() then
+            local flying = host:isFlying()
+            if flying ~= lastSentFlying then
+                lastSentFlying = flying
+                creativeFlying = flying
+                pings.setCreativeFlying(flying)
+            end
+        end
+        data.creativeFlying = creativeFlying
+        -- snap in fast, but never cut to the flight pose in one frame
+        local flyTarget = creativeFlying and 1 or 0
+        data.flyBlend = math.lerp(data.flyBlend, flyTarget, 0.4)
+        if math.abs(data.flyBlend - flyTarget) < 0.01 then data.flyBlend = flyTarget end
 
         -- hands
         local handedness = player:isLeftHanded()
@@ -70,7 +93,9 @@ function driver.setup(controller)
         data.groundTime = data.isOnGround and data.groundTime + 1 or 0
 
         data.jumpTime = data.jumpTime * 0.85
-        if not data.isOnGround and data.oldOnGround and oldGroundTime > 2 and velocity.y > 0.1 then
+        if not data.isOnGround and data.oldOnGround and oldGroundTime > 2 and velocity.y > 0.1
+            and not creativeFlying then
+            -- creative takeoff is not a jump: the flight pose fades in instead
             data.jumpTime = math.min(velocity.y * 8, 2)
         elseif data.isOnGround then
             -- clear on touchdown: a long cooldown kept the sprint takeoff and
@@ -118,6 +143,8 @@ function driver.setup(controller)
         jumpPhase = 0,
         wasWalkJumping = false,
         crouchAirBlend = 0,
+        creativeFlying = false,
+        flyBlend = 0,
         headTilt = 0,
         sprintScale = 0,
         crouchBlend = 0,

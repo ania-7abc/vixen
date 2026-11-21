@@ -14,6 +14,11 @@ local state = {
     scarf = false,
     bowTie = false,
 }
+-- the collar and the scarf occupy the same place on the neck
+local exclusive = {
+    collar = "scarf",
+    scarf = "collar",
+}
 local actions = {}
 
 local function getPart(key)
@@ -27,6 +32,12 @@ local function apply(key, value)
     if part then part:setVisible(value) end
     local action = actions[key]
     if action then action:setToggled(value) end
+    -- keep every path (config load, ping, wheel) consistent, and make the
+    -- recursion stop on the partner being switched off
+    if value then
+        local other = exclusive[key]
+        if other and state[other] then apply(other, false) end
+    end
 end
 
 function pings.setAccessory(key, value)
@@ -55,6 +66,9 @@ events.on("entity_init", function ()
     if host:isHost() then
         for _, key in ipairs(keys) do
             pings.setAccessory(key, state[key])
+            -- persist the resolved state in case an old config had both the
+            -- collar and the scarf enabled at the same time
+            config.save(key, state[key])
         end
     end
 end)
@@ -66,10 +80,16 @@ end
 
 function accessories.set(key, value)
     if state[key] == nil or state[key] == value then return end
+    local other = exclusive[key]
+    local disableOther = value and other and state[other] or false
     -- pings only reach other clients, so always apply locally as well
     apply(key, value)
     pings.setAccessory(key, value)
     config.save(key, value)
+    if disableOther then
+        pings.setAccessory(other, false)
+        config.save(other, false)
+    end
 end
 
 accessories.keys = keys
