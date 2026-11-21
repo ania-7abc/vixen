@@ -60,6 +60,16 @@ local poseActions = {}
 local wagAction
 local headTiltAction
 
+local function disableWag()
+    wagAction:setToggled(false)
+    anim.wag(false)
+end
+
+local function disableHeadTilt()
+    headTiltAction:setToggled(false)
+    anim.headTilt(false)
+end
+
 local function addPose(name, title, item, onClick)
     local action = posePage:newAction():setTitle(title):setItem(item)
     action:onLeftClick(onClick or function (_)
@@ -73,13 +83,22 @@ addPose("wSleep", "Sleep", "minecraft:red_bed", function (_)
     if anim.activePose() == "wSleep" then
         anim.stop()
     else
+        disableWag()
+        disableHeadTilt()
         anim.sleep()
         sounds.play("sleep")
     end
 end)
 addPose("wSit", "Sit (tucked)", "minecraft:spruce_stairs")
 addPose("wSitAlt", "Sit (legs out)", "minecraft:oak_stairs")
-addPose("wCurl", "Curl up", "minecraft:hay_block")
+addPose("wCurl", "Curl up", "minecraft:hay_block", function (_)
+    if anim.activePose() == "wCurl" then
+        anim.stop()
+    else
+        disableHeadTilt()
+        anim.pose("wCurl")
+    end
+end)
 
 -- highlight the currently playing pose and selected skin
 local skinActions = {}
