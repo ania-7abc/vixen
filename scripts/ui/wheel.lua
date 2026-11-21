@@ -4,6 +4,7 @@ local accessories = require("scripts.features.accessories")
 local sounds = require("scripts.features.sounds")
 local settings = require("scripts.core.settings")
 local events = require("scripts.core.events")
+local state = require("scripts.core.state")
 
 -- page history for backing
 local history = {}
@@ -59,15 +60,6 @@ local poseActions = {}
 local wagAction
 local headTiltAction
 
-local function setHeadTilt(enabled)
-    headTiltAction:setToggled(enabled)
-    anim.headTilt(enabled)
-end
-
-local function stopPose(name)
-    if anim.activePose() == name then anim.stop() end
-end
-
 local function addPose(name, title, item, onClick)
     local action = posePage:newAction():setTitle(title):setItem(item)
     action:onLeftClick(onClick or function (_)
@@ -81,23 +73,13 @@ addPose("wSleep", "Sleep", "minecraft:red_bed", function (_)
     if anim.activePose() == "wSleep" then
         anim.stop()
     else
-        wagAction:setToggled(false)
-        setHeadTilt(false)
-        anim.wag(false)
         anim.sleep()
         sounds.play("sleep")
     end
 end)
 addPose("wSit", "Sit (tucked)", "minecraft:spruce_stairs")
 addPose("wSitAlt", "Sit (legs out)", "minecraft:oak_stairs")
-addPose("wCurl", "Curl up", "minecraft:hay_block", function (_)
-    if anim.activePose() == "wCurl" then
-        anim.stop()
-    else
-        setHeadTilt(false)
-        anim.pose("wCurl")
-    end
-end)
+addPose("wCurl", "Curl up", "minecraft:hay_block")
 
 -- highlight the currently playing pose and selected skin
 local skinActions = {}
@@ -130,9 +112,12 @@ wagAction = posePage:newAction()
 :setToggleTitle("Wagging")
 :setItem("minecraft:feather")
 :setToggleItem("minecraft:sugar")
-:onToggle(function (state, _)
-    if state then stopPose("wSleep") end
-    anim.wag(state)
+:onToggle(function (enabled, _)
+    if enabled and state.isSleeping() then
+        wagAction:setToggled(false)
+        return
+    end
+    anim.wag(enabled)
 end)
 
 headTiltAction = posePage:newAction()
@@ -140,12 +125,12 @@ headTiltAction = posePage:newAction()
 :setToggleTitle("Tilting")
 :setItem("minecraft:player_head")
 :setToggleItem("minecraft:compass")
-:onToggle(function (state, _)
-    if state then
-        stopPose("wSleep")
-        stopPose("wCurl")
+:onToggle(function (enabled, _)
+    if enabled and (state.isSleeping() or anim.activePose() == "wCurl") then
+        headTiltAction:setToggled(false)
+        return
     end
-    anim.headTilt(state)
+    anim.headTilt(enabled)
 end)
 
 -- skins

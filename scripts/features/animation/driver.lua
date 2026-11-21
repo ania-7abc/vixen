@@ -73,11 +73,12 @@ function driver.setup(controller)
         data.sprintScale = math.lerp(data.sprintScale, data.isSprinting and 1 or 0, 0.6)
         -- cross-fade standing and sneaking instead of cutting between the poses
         data.crouchBlend = math.lerp(data.crouchBlend, data.pose == "CROUCHING" and 1 or 0, 0.25)
-        -- sneaking has its own tail motion, so fade out the wagging animation
-        data.wagBlend = math.lerp(data.wagBlend, data.pose == "CROUCHING" and 0 or 1, 0.25)
-
-        -- the head tilt pose layers over other poses, but never over sleep or curl up
         local sleeping = state.isSleeping() or data.pose == "SLEEPING"
+        -- sneaking and sleeping have their own motion, so fade out the wagging animation
+        local suppressWag = sleeping or data.pose == "CROUCHING"
+        data.wagBlend = math.lerp(data.wagBlend, suppressWag and 0 or 1, 0.25)
+
+        -- the head tilt pose layers over other poses, but sleep and curl up block it
         local curlPose = state.activePose() == "wCurl"
         local headTiltTarget = data.headTiltEnabled and not sleeping and not curlPose and 1 or 0
         data.headTiltBlend = math.lerp(data.headTiltBlend, headTiltTarget, 0.25)
