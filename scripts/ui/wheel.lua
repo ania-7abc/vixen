@@ -57,6 +57,7 @@ addPageLink("Settings", "minecraft:totem_of_undying", settingsPage)
 -- poses: the sleep pose also plays the fox sleep call
 local poseActions = {}
 local wagAction
+local headTiltAction
 
 local function addPose(name, title, item, onClick)
     local action = posePage:newAction():setTitle(title):setItem(item)
@@ -72,14 +73,15 @@ addPose("wSleep", "Sleep", "minecraft:red_bed", function (_)
         anim.stop()
     else
         wagAction:setToggled(false)
+        headTiltAction:setToggled(false)
         anim.wag(false)
+        anim.headTilt(false)
         anim.sleep()
         sounds.play("sleep")
     end
 end)
 addPose("wSit", "Sit (tucked)", "minecraft:spruce_stairs")
 addPose("wSitAlt", "Sit (legs out)", "minecraft:oak_stairs")
-addPose("wCurious", "Curious tilt", "minecraft:compass")
 addPose("wCurl", "Curl up", "minecraft:hay_block")
 
 -- highlight the currently playing pose and selected skin
@@ -116,6 +118,16 @@ wagAction = posePage:newAction()
 :onToggle(function (state, _)
     if state and anim.activePose() == "wSleep" then anim.stop() end
     anim.wag(state)
+end)
+
+headTiltAction = posePage:newAction()
+:setTitle("Head tilt")
+:setToggleTitle("Tilting")
+:setItem("minecraft:player_head")
+:setToggleItem("minecraft:compass")
+:onToggle(function (state, _)
+    if state and anim.activePose() == "wSleep" then anim.stop() end
+    anim.headTilt(state)
 end)
 
 -- skins

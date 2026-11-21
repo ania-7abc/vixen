@@ -62,6 +62,11 @@ function poses.setup(controller, wheelSwapNode, modelAnims)
         end
     end
 
+    function pings.setHeadTilt(enabled)
+        controller.data.headTiltEnabled = enabled
+        if enabled then util.forceStartAnim(modelAnims.headTilt) end
+    end
+
     function poses.activePose()
         return state.activePose()
     end
@@ -82,6 +87,10 @@ function poses.setup(controller, wheelSwapNode, modelAnims)
 
     function poses.wag(enabled)
         pings.setWag(enabled)
+    end
+
+    function poses.headTilt(enabled)
+        pings.setHeadTilt(enabled)
     end
 
     return poses

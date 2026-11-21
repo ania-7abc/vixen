@@ -1,6 +1,7 @@
 -- Collects player state into the data table used by every animation node.
 
 local modelAnims = animations["model"]
+local state = require("scripts.core.state")
 
 local driver = {}
 
@@ -74,6 +75,11 @@ function driver.setup(controller)
         data.crouchBlend = math.lerp(data.crouchBlend, data.pose == "CROUCHING" and 1 or 0, 0.25)
         -- sneaking has its own tail motion, so fade out the wagging animation
         data.wagBlend = math.lerp(data.wagBlend, data.pose == "CROUCHING" and 0 or 1, 0.25)
+
+        -- the head tilt pose layers over other poses, but never over sleep
+        local sleeping = state.isSleeping() or data.pose == "SLEEPING"
+        local headTiltTarget = data.headTiltEnabled and not sleeping and 1 or 0
+        data.headTiltBlend = math.lerp(data.headTiltBlend, headTiltTarget, 0.25)
 
         data.headTilt = math.lerp(data.headTilt, math.clamp(-velocity.y * 15, -25, 25), 0.3)
 
@@ -149,6 +155,8 @@ function driver.setup(controller)
         sprintScale = 0,
         crouchBlend = 0,
         wagBlend = 1,
+        headTiltEnabled = false,
+        headTiltBlend = 0,
         smoothWalkScale = 0,
         smoothForwardScale = 0,
     }

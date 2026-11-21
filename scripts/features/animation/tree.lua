@@ -310,6 +310,14 @@ function tree.setup(controller)
     )
     local wheelPoseAnim = wheelSwapNode
 
+    local headTiltPoseAnim = lib.mix(
+        function (data)
+            return data.headTiltBlend
+        end,
+        nil,
+        modelAnims.headTilt
+    )
+
     local wagBlendAnim = lib.func(
         function (data, blend)
             animations.model.tailWag:blend(data.wagBlend)
@@ -327,6 +335,7 @@ function tree.setup(controller)
             },
             wheelPoseAnim
         ),
+        headTiltPoseAnim,
         wagBlendAnim,
     }
 
