@@ -49,7 +49,7 @@ Shaders:
   - Closed eyes during sleep.
 - Hold certain items in the mouth. Tools will also be held in the mouth while sprinting. The `All in mouth` setting makes a single held item go to the mouth while sprinting; with two held items or items with hand animations (shields, bows, crossbows, tridents, spyglasses, etc.) the usual rules apply. You can modify which items and tools are held in the mouth in `scripts/items.lua`.
 - Wag the tail and ears from the action wheel (`Poses` page). Toggle it off to let the motion finish :3c
-- Toggle the head tilt from the action wheel (`Poses` page). It layers over other poses and turns off for sleep.
+- Toggle the head tilt from the action wheel (`Poses` page). It layers over most poses, but is mutually exclusive with `Sleep` and `Curl up`.
   - Ears have their own spring physics, reacting to movement and occasional twitches; can be tuned from `Settings` → `Visual`.
 - Occasional idle animations (sniffing, looking around, a quick shake) while standing still. Can be turned off in `Settings` → `Visual`.
 - 6 biome-themed skins (Forest, Desert, Winter, Shadow, Nether and End Fox). Can be changed manually from the action wheel; the active skin is highlighted in green.

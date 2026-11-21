@@ -76,9 +76,10 @@ function driver.setup(controller)
         -- sneaking has its own tail motion, so fade out the wagging animation
         data.wagBlend = math.lerp(data.wagBlend, data.pose == "CROUCHING" and 0 or 1, 0.25)
 
-        -- the head tilt pose layers over other poses, but never over sleep
+        -- the head tilt pose layers over other poses, but never over sleep or curl up
         local sleeping = state.isSleeping() or data.pose == "SLEEPING"
-        local headTiltTarget = data.headTiltEnabled and not sleeping and 1 or 0
+        local curlPose = state.activePose() == "wCurl"
+        local headTiltTarget = data.headTiltEnabled and not sleeping and not curlPose and 1 or 0
         data.headTiltBlend = math.lerp(data.headTiltBlend, headTiltTarget, 0.25)
 
         data.headTilt = math.lerp(data.headTilt, math.clamp(-velocity.y * 15, -25, 25), 0.3)
